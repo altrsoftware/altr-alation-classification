@@ -2,7 +2,7 @@ const altr = require('./api/altrApi.js');
 const alation = require('./api/alationApi');
 require('dotenv').config();
 
-const altrAuth = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
+const ALTR_AUTH = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
 
 /**
  * Filters out classified ALTR databases to exclude ones that are not also in alation
@@ -11,15 +11,13 @@ const altrAuth = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KE
  * @returns 
  */
 let filterClassifiedDbs = (classifiedAltrDbs, alationDbs) => {
-	let result = classifiedAltrDbs.filter(altrDb => {
+	return classifiedAltrDbs.filter(altrDb => {
 		return alationDbs.find(alationDb => {
-			return altrDb.dbname.toUpperCase() === alationDb.dbname.toUpperCase();
+			if (altrDb.dbname != null && alationDb.dbname != null) {
+				return altrDb.dbname.toUpperCase() === alationDb.dbname.toUpperCase();
+			}
 		});
 	});
-
-	if (result.length == 0) throw new Error('There are no matching databases between Alation and classified AlTR databases');
-
-	return result;
 }
 exports.filterClassifiedDbs = filterClassifiedDbs;
 
@@ -30,14 +28,12 @@ exports.filterClassifiedDbs = filterClassifiedDbs;
  * @returns JS Map
  */
 let getClassifiers = async (classifiedAltrDbs) => {
-	if (classifiedAltrDbs.length == 0) throw new Error('classifiedAltrDbs is empty');
-
 	let classifiersOfDbs = new Map();
 
 	try {
 		for (const db of classifiedAltrDbs) {
-			let classifiers = await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, altrAuth, db.dbid);
-			classifiersOfDbs.set(db.dbid, classifiers.data.Classifications);
+			let classifiers = await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, ALTR_AUTH, db.dbid);
+			if (classifiers.Classifications.length != 0) classifiersOfDbs.set(db.dbid, classifiers.Classifications);
 		}
 		return classifiersOfDbs;
 	} catch (error) {
@@ -59,13 +55,15 @@ let getColumnsWithClassifiers = async (classifiersOfDbs) => {
 		// LOOPS THROUGH CLASSIFIERS OF EACH DB, GETS THE COLUMNS UNDER EACH CLASSIFIER, BUILDS AN ARRAY OF COLUMNS WITH CLASSIFIERS
 		for (const [dbid, classifiers] of classifiersOfDbs.entries()) {
 			for (const classifier of classifiers) {
-				let columns = await altr.getColumnsOfClassifierOfDb(process.env.ALTR_DOMAIN, altrAuth, classifier.Type, dbid);
-				for (const column of columns.data) {
-					let classifiers = column.alsoAppearsAs;
-					classifiers.push(classifier.Type);
-					classifiers.sort();
-					let obj = { 'database': column.database, 'schema': column.schema, 'table': column.table, 'column': column.column, 'classifiers': classifiers };
-					columnsWithClassifiers.push(obj);
+				let columns = await altr.getColumnsOfClassifierOfDb(process.env.ALTR_DOMAIN, ALTR_AUTH, classifier.Type, dbid);
+				for (const column of columns) {
+					if (column != null) {
+						let classifiers = column.alsoAppearsAs;
+						classifiers.push(classifier.Type);
+						classifiers.sort();
+						let obj = { 'database': column.database, 'schema': column.schema, 'table': column.table, 'column': column.column, 'classifiers': classifiers };
+						columnsWithClassifiers.push(obj);
+					}
 				};
 			};
 		};

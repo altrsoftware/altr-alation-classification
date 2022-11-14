@@ -12,8 +12,8 @@
 The Alation Classification Integration is a tool to pass classification data of a database in ALTR into Alation.
 
 This tool is plumbing between to available API's.
-- [ALTR Management  API](https://altrnet.live.altr.com/api/swagger/)
-- [Alation API](https://developer.alation.com/dev/reference/refresh-access-token-overview)
+* [ALTR Management  API](https://altrnet.live.altr.com/api/swagger/)
+* [Alation API](https://developer.alation.com/dev/reference/refresh-access-token-overview)
 
   
   
@@ -94,145 +94,147 @@ $ cd altr-alation-classification
 
 3. Under the *Custom Fields* tab, add a *Multi-Select Pickers*
 
-- *Name (plural)*: Classification Matches
+    - *Name (plural)*: Classification Matches
 
-- *Name (singular)*: Classification Match
+    - *Name (singular)*: Classification Match
 
-- *Tooltip Text*: Classification from ALTR
+    - *Tooltip Text*: Classification from ALTR
 
 4. Click *+ Add Option* and each one from the list below
 
-- AGE
+    - AGE
 
-- DATE
+    - DATE
 
-- ADVERTISING_ID
+    - ADVERTISING_ID
 
-- CREDIT_CARD_NUMBER
+    - CREDIT_CARD_NUMBER
 
-- CREDIT_CARD_TRACKING_NUMBER
+    - CREDIT_CARD_TRACKING_NUMBER
 
-- DATE_OF_BIRTH
+    - DATE_OF_BIRTH
 
-- DOMAIN_NAME
+    - DOMAIN_NAME
 
-- EMAIL_ADDRESS
+    - EMAIL_ADDRESS
 
-- ETHNIC_GROUP
+    - ETHNIC_GROUP
 
-- FEMALE_NAME
+    - FEMALE_NAME
 
-- FIRST_NAME
+    - FIRST_NAME
 
-- GENDER
+    - GENDER
 
-- GENERIC_ID
+    - GENERIC_ID
 
-- IBAN_CODE
+    - IBAN_CODE
 
-- HTTP_COOKIE
+    - HTTP_COOKIE
 
-- ICD9_CODE
+    - ICD9_CODE
 
-- ICD10_CODE
+    - ICD10_CODE
 
-- IMEI_HARDWARE_ID
+    - IMEI_HARDWARE_ID
 
-- IMSI_ID
+    - IMSI_ID
 
-- IP_ADDRESS
+    - IP_ADDRESS
 
-- LAST_NAME
+    - LAST_NAME
 
-- LOCATION
+    - LOCATION
 
-- MAC_ADDRESS
+    - MAC_ADDRESS
 
-- MAC_ADDRESS_LOCAL
+    - MAC_ADDRESS_LOCAL
 
-- MALE_NAME
+    - MALE_NAME
 
-- MEDICAL_TERM
+    - MEDICAL_TERM
 
-- ORGANIZATION_NAME
+    - ORGANIZATION_NAME
 
-- PASSPORT
+    - PASSPORT
 
-- PERSON_NAME
+    - PERSON_NAME
 
-- PHONE_NUMBER
+    - PHONE_NUMBER
 
-- STREET_ADDRESS
+    - STREET_ADDRESS
 
-- SWIFT_CODE
+    - SWIFT_CODE
 
-- STORAGE_SIGNED_POLICY_DOCUMENT
+    - STORAGE_SIGNED_POLICY_DOCUMENT
 
-- STORAGE_SIGNED_URL
+    - STORAGE_SIGNED_URL
 
-- TIME
+    - TIME
 
-- URL
+    - URL
 
-- VEHICLE_IDENTIFICATION_NUMBER
+    - VEHICLE_IDENTIFICATION_NUMBER
 
-- AUTH_TOKEN
+    - AUTH_TOKEN
 
-- AWS_CREDENTIALS
+    - AWS_CREDENTIALS
 
-- AZURE_AUTH_TOKEN
+    - AZURE_AUTH_TOKEN
 
-- BASIC_AUTH_HEADER
+    - BASIC_AUTH_HEADER
 
-- ENCRYPTION_KEY
+    - ENCRYPTION_KEY
 
-- GCP_API_KEY
+    - GCP_API_KEY
 
-- GCP_CREDENTIALS
+    - GCP_CREDENTIALS
 
-- JSON_WEB_TOKEN
+    - JSON_WEB_TOKEN
 
-- PASSWORD
+    - PASSWORD
 
-- WEAK_PASSWORD_HASH
+    - WEAK_PASSWORD_HASH
 
-- XSRF_TOKEN
+    - XSRF_TOKEN
 
-- AMERICAN_BANKERS_CUSIP_ID
+    - AMERICAN_BANKERS_CUSIP_ID
 
-- FDA_CODE
+    - FDA_CODE
 
-- US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER
+    - US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER
 
-- US_BANK_ROUTING_MICR
+    - US_BANK_ROUTING_MICR
 
-- US_DEA_NUMBER
+    - US_DEA_NUMBER
 
-- US_DRIVERS_LICENSE_NUMBER
+    - US_DRIVERS_LICENSE_NUMBER
 
-- US_EMPLOYER_IDENTIFICATION_NUMBER
+    - US_EMPLOYER_IDENTIFICATION_NUMBER
 
-- US_HEALTHCARE_NPI
+    - US_HEALTHCARE_NPI
 
-- US_INDIVIDUAL_TAXPAYER_IDENTIFICATION_NUMBER
+    - US_INDIVIDUAL_TAXPAYER_IDENTIFICATION_NUMBER
 
-- US_PASSPORT
+    - US_PASSPORT
 
-- US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
+    - US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
 
-- US_SOCIAL_SECURITY_NUMBER
+    - US_SOCIAL_SECURITY_NUMBER
 
-- US_STATE
+    - US_STATE
 
-- US_TOLLFREE_PHONE_NUMBER
+    - US_TOLLFREE_PHONE_NUMBER
 
-- US_VEHICLE_IDENTIFICATION_NUMBER
+    - US_VEHICLE_IDENTIFICATION_NUMBER
 
 5. Under the *Custom Templates* tab, click *Column*
 
-6. On the right side of the template, click *Insert* -> *Custom Field* -> *Classification Matches*
+6. On the right side of the template, click *Insert* -> *Grouping of Custom Fields* -> *Classification Matches*
 
-7. Save the template
+7. Or if you already have an ALTR grouping just add *Classification Matches* to it
+
+8. Save the template
 
   
 
@@ -260,7 +262,7 @@ $ cd altr-alation-classification
 ## How To Use
 
 > **Warning**
-You must complete the **Before using the tool** section; otherwise, the integration will not work correctly.
+> You must complete the **Before using the tool** section; otherwise, the integration will not work correctly.
 
 **Method 1: <a  href="https://www.docker.com/">Docker</a>**
 
@@ -290,17 +292,15 @@ This application was built using the following node packages and their respected
 
   
 
-- [node](https://nodejs.org/download/release/v16.0.0/) : 0.27.2
+* [node](https://nodejs.org/download/release/v16.0.0/) : 0.27.2
 
-- [dotenv](https://www.npmjs.com/package/dotenv/v/16.0.3) : 16.0.3
+* [dotenv](https://www.npmjs.com/package/dotenv/v/16.0.3) : 16.0.3
 
-- [axios](https://www.npmjs.com/package/axios/v/0.27.2) : 0.27.2
+* [axios](https://www.npmjs.com/package/axios/v/0.27.2) : 0.27.2
 
-- [snowflake-sdk](https://www.npmjs.com/package/snowflake-sdk/v/1.6.14) : 1.6.14
+* [axios-mock-adapter](https://www.npmjs.com/package/axios-mock-adapter/v/1.21.2) : 1.21.2
 
-- [axios-mock-adapter](https://www.npmjs.com/package/axios-mock-adapter/v/1.21.2) : 1.21.2
-
-- [jest](https://www.npmjs.com/package/jest/v/29.2.2) : 29.2.2
+* [jest](https://www.npmjs.com/package/jest/v/29.2.2) : 29.2.2
 
   
 
@@ -316,4 +316,4 @@ Email *application-engineers@altr.com* with a subject line of "Alation Classific
 
 ## License
 
-GNU General Public License](gnu-gpl-v3.0.md)
+[GNU General Public License](LICENSE.md)

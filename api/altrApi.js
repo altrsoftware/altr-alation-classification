@@ -15,7 +15,7 @@ let getClassifiedDbs = async (altrDomain, altrAuth) => {
 
 	try {
 		const response = await axios.request(options);
-		return response.data;
+		return response.data.data;
 	} catch (error) {
 		console.error('GET classified databases error');
 		if (error.response) {
@@ -74,7 +74,7 @@ let getClassifiersOfDb = async (altrDomain, altrAuth, dbId) => {
 
 	try {
 		const response = await axios.request(options);
-		return response.data;
+		return response.data.data;
 	} catch (error) {
 		if (error.response) {
 			console.error('GET classifiers of database error');
@@ -103,7 +103,7 @@ let getColumnsOfClassifierOfDb = async (altrDomain, altrAuth, classifier, dbId) 
 
 	try {
 		const response = await axios.request(options);
-		return response.data;
+		return response.data.data;
 	} catch (error) {
 		if (error.response) {
 			console.error('GET columns of classifier error');

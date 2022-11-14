@@ -4,64 +4,65 @@ const altr = require('./api/altrApi');
 const utils = require('./utils.js');
 
 // BUILDS BASE64 ENCODED STRING FOR ALTR API AUTH
-const altrAuth = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
+const ALTR_AUTH = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
 
 let main = async () => {
 	console.time('Execution Time');
 
 	let alationPermissions = await alation.getUsers(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, process.env.ALATION_EMAIL);
-	let altrPermissions = await altr.getAdministrators(process.env.ALTR_DOMAIN, altrAuth);
+	let altrPermissions = await altr.getAdministrators(process.env.ALTR_DOMAIN, ALTR_AUTH);
 
 	if (altrPermissions && alationPermissions) {
 		console.log('Permissions Passed\n');
 
 		try {
-			// GET LIST OF DATABASES THAT HAVE BEEN CLASSIFIED IN ALTR & AlATION DBS
-			let classifiedAltrDbs = await altr.getClassifiedDbs(process.env.ALTR_DOMAIN, altrAuth);
+			// Get list of databases in ALTR that have been classified 
+			let classifiedAltrDbs = await altr.getClassifiedDbs(process.env.ALTR_DOMAIN, ALTR_AUTH);
+			if (classifiedAltrDbs.length == 0) throw new Error('There are no classified databases in ALTR.');
+			console.log('\nCLASSIFIED ALTR DATABASES: ' + classifiedAltrDbs.length);
+			console.dir(classifiedAltrDbs, {depth: null});
+
+			// Get a list of databases from Alation
 			let alationDbs = await alation.getDatabases(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN);
+			if (alationDbs.length == 0) throw new Error('There are no databases in Alation.');
+			console.log('\nALATION DATABASES: ' + alationDbs.length);
+			console.dir(alationDbs, {depth: null});
 
-			if (classifiedAltrDbs == []) {
-				console.log('There are no classified databases in ALTR');
-				return;
-			}
+			// Filter list of classified ALTR databases to only include databases that also exist in Alation
+			classifiedAltrDbs = utils.filterClassifiedDbs(classifiedAltrDbs, alationDbs);
+			if (classifiedAltrDbs.length == 0) throw new Error('No matching databases between Alation databases and classified ALTR databases.');
+			console.log('\nFILTERED CLASSIFIED ALTR DATABASES: ' + classifiedAltrDbs.length);
+			console.dir(classifiedAltrDbs, {depth: null});
 
-			if (alationDbs == []) {
-				console.log('There are no databases in Alation');
-				return;
-			}
-
-			// FILTER CLASSIFIED ALTR DBS TO EXCLUDE DBS THAT ARE NOT IN ALATION
-			classifiedAltrDbs.data = utils.filterClassifiedDbs(classifiedAltrDbs.data, alationDbs);
-
-			if (classifiedAltrDbs.data == []) {
-				console.log('No matching databases between Alation databases and classified ALTR databases');
-				return;
-			}
-
-			// GETS LIST OF CLASSIFIERS OF EACH DB
+			// Get list of classifiers per database
 			let classifiers = new Map();
-			classifiers = await utils.getClassifiers(classifiedAltrDbs.data);
+			classifiers = await utils.getClassifiers(classifiedAltrDbs);
+			console.log('\nCLASSIFIERS: ' + classifiers.size);
+			console.dir(classifiers, {depth: null});
 
-			// GETS COLUMN DATA AND ITS CLASSIFIERS
+			// Get list of columns per classifier
 			let columnsWithClassifiers = [];
 			columnsWithClassifiers = await utils.getColumnsWithClassifiers(classifiers);
+			console.log('\nALTR CLASSIFIED COLUMNS: ' + columnsWithClassifiers.length);
+			console.dir(columnsWithClassifiers, {depth: null});
 
-			// LOOPS THROUGH COLUMN ARRAY, GETS ALATION DATA FOR COLUMN, BUILDS AN ARRAY OF OBJECTS FOR UPDATING "CLASSIFICATION MATCHES" CUSTOM FIELD PER COLUMN
+			// Loop through columns, get corresponding Alation column data and build list of column/classifier objects for custom field value update
 			let objects = [];
 			objects = await utils.getClassificationMatchesArray(columnsWithClassifiers);
+			console.log('\nUPDATE ALATION CUSTOM FIELD VALUE OBJECTS: ' + objects.length);
+			console.dir(objects, {depth: null});
 
-			// SETS CLASSIFIERS IN CUSTOM FIELD, "CLASSIFICATION MATCHES", PER COLUMN
+			// Updates custom field per column with classification values
 			let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, objects);
 
 			console.log('Alation Custom Field Update Result:')
 			console.log(response);
 
 			console.log('\nEffected Databases:');
-			console.log(classifiedAltrDbs.data);
+			console.log(classifiedAltrDbs);
 			
 		} catch (error) {
-			console.error('\n\nERROR:')
-			console.error(error);
+			if (!error.response) console.error(error);
 			return;
 		}
 	} else {
