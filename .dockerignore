@@ -1,0 +1,6 @@
+.dockerignore
+.git
+Dockerfile
+.github
+imgs
+test
