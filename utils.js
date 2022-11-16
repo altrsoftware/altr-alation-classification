@@ -123,3 +123,15 @@ let getClassificationMatchesArray = async (columnsWithClassifiers) => {
 	}
 };
 exports.getClassificationMatchesArray = getClassificationMatchesArray;
+
+/**
+ * Handles pagination of array
+ * @param {Array} array 
+ * @param {Number} page_size 
+ * @param {Number} page_number 
+ * @returns JS Array
+ */
+let paginate = (array, page_size, page_number) => {
+	return array.slice((page_number - 1) * page_size, page_number * page_size);
+}
+exports.paginate = paginate;
