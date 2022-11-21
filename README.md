@@ -36,6 +36,8 @@ The tool:
 
 5. adds classifier(s) to column in Alation
 
+6. updates database page with ALTR classification report
+
   
   
 

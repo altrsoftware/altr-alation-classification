@@ -35,14 +35,14 @@ let main = async () => {
 			console.dir(classifiedAltrDbs, { depth: null });
 
 			// Get list of classifiers per database
-			let classifiers = new Map();
-			classifiers = await utils.getClassifiers(classifiedAltrDbs);
-			console.log('\nCLASSIFIERS: ' + classifiers.size);
-			console.dir(classifiers, { depth: null });
+			let classificationReports = new Map();
+			classificationReports = await utils.getClassifiers(classifiedAltrDbs);
+			console.log('\nCLASSIFICATION REPORTS: ');
+			console.dir(classificationReports, { depth: null });
 
 			// Get list of columns per classifier
 			let columnsWithClassifiers = [];
-			columnsWithClassifiers = await utils.getColumnsWithClassifiers(classifiers);
+			columnsWithClassifiers = await utils.getColumnsWithClassifiers(classificationReports.classifications);
 			console.log('\nALTR CLASSIFIED COLUMNS: ' + columnsWithClassifiers.length);
 			console.dir(columnsWithClassifiers, { depth: null });
 
@@ -52,13 +52,27 @@ let main = async () => {
 			console.log('\nUPDATE ALATION CUSTOM FIELD VALUE OBJECTS: ' + objects.length);
 			console.dir(objects, { depth: null });
 
-			// Updates custom field per column with classification values
+			// Updates custom field, "Classification Matches", of columns with classification values
 			let objPerRequest = 50;
 			for (let i = 1; i <= objects.length / objPerRequest + 1; i++) {
 				let obj = utils.paginate(objects, objPerRequest, i);
 				let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, obj);
-				console.log('ALATION CUSTOM FIELD UPDATE RESULT:')
+				console.log('\nALATION CUSTOM FIELD (Classification Matches) UPDATE RESULT:')
 				console.log(response);
+			}
+
+			// Send classification report to data source page
+			let richTextCustomField = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'RICH_TEXT', null, 'ALTR Classification Report');
+			if (richTextCustomField.length != 0) {
+				let richTextCustomFieldId = richTextCustomField[0].id;
+
+				let richTexts = utils.createRichTexts(classificationReports, alationDbs, classifiedAltrDbs);
+				for (const richTextUpdate of richTexts.entries()) {
+					let obj = { field_id: richTextCustomFieldId, ts_updated: (new Date()).toISOString(), oid: richTextUpdate[0], value: richTextUpdate[1], otype: 'data' };
+					let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, [obj]);
+					console.log('\nALATION CUSTOM FIELD (ALTR Classification Report) UPDATE RESULT:')
+					console.log(response);
+				}
 			}
 
 			console.log('\nEFFECTED DATABASES:');
