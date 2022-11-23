@@ -36,7 +36,7 @@ The tool:
 
 5. updates *ALTR Classification* (Custom Field) with classifier(s) of each column
 
-6. updates the Alation datasource page with ALTR classification report overview
+6. updates *ALTR Classification Report* (Custom Field) in the Alation datasource page with a ALTR classification report overview
 
   
   
@@ -88,7 +88,7 @@ Alation Column after running the application:
 
 ## Before using the tool
 
-**1. You must add a custom field to your Alation environment for this application to work successfully**
+**1. You must add a custom fields to your Alation environment for this application to work successfully**
 
     $ node customFieldMaker.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
 
@@ -103,6 +103,10 @@ Alation Column after running the application:
 5. On the right side of the template, click *Insert* -> *Custom Field* -> *ALTR Classifications*
 
 6. At the top of the template, click *Save*
+
+7. Under the *Data Object Templates* section, click *Data Source*
+
+8. Under the *Description* field, click *Insert* -> *Custom Field* -> *ALTR Classification Report*
 
 **2. Fill out the .env file environment variables**
 
@@ -156,7 +160,6 @@ This method will install the necessary packages needed to run the application fo
 ## Dependencies
 
 This application was built using the following node packages and their respected version:
-
 
 * [axios](https://www.npmjs.com/package/axios/v/0.27.2) : 0.27.2
 

@@ -98,8 +98,8 @@ let getClassificationMatchesArray = async (columnsWithClassifiers) => {
 
 	try {
 		// GET "CLASSIFICATION MATCHES" CUSTOM FIELD ID
-		let customFields = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'MULTI_PICKER', 'Classification Matches');
-		if (customFields.length == 0) throw new Error('"Classification Matches" custom was not found.')
+		let customFields = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'MULTI_PICKER', 'ALTR Classifications');
+		if (customFields.length == 0) throw new Error('"ALTR Classifications" custom field was not found.')
 		let customFieldId = customFields[0].id;
 
 		// GETS LIST OF DATABASES AND SCHEMAS IN ALATION

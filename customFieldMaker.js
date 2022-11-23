@@ -49,7 +49,7 @@ let main = async () => {
 		let domain = args.domain;
 		let response = await login(domain, args.account, args.password);
 
-		let data = {
+		let dataColumn = {
 			"field_type": "MULTI_PICKER",
 			"name": "ALTR Classification",
 			"name_plural": "ALTR Classifications",
@@ -64,15 +64,33 @@ let main = async () => {
 			"flavor": "DEFAULT",
 			"tooltip_text": "Classification from ALTR"
 		};
+
+		let dataDatasource = {
+			"field_type": "RICH_TEXT",
+			"name": "ALTR Classification Report",
+			"name_singular": "ALTR Classification Report",
+			"backref_name": "null",
+			"backref_tooltip_text": "null",
+			"allowed_otypes": [],
+			"builtin_name": "null",
+			"universal_field": "false",
+			"flavor": "DEFAULT",
+			"tooltip_text": "Classification report overview from ALTR"
+		};
+
+
 		let postCustomFieldOptions = { headers: { 'X-CSRFToken': jar.toJSON().cookies[0].value, 'Cookie': `csrftoken=${jar.toJSON().cookies[0].value}; sessionid=${jar.toJSON().cookies[1].value}`, 'Referer': `https://${domain}/login/` } };
-		let createCustomField = await client.post(`https://${domain}/ajax/custom_field/`, data, postCustomFieldOptions);
-		console.log(createCustomField.data);
+		let createCustomFieldColumn = await client.post(`https://${domain}/ajax/custom_field/`, dataColumn, postCustomFieldOptions);
+		console.log(createCustomFieldColumn.data);
+
+		let createCustomFieldDatasource = await client.post(`https://${domain}/ajax/custom_field/`, dataDatasource, postCustomFieldOptions);
+		console.log(createCustomFieldDatasource.data);
 	} catch (error) {
 		console.log(error);
 		return;
 	}
 
-	console.log('\nCUSTOM FIELD CREATED!');
+	console.log('\nCUSTOM FIELDS CREATED!');
 }
 
 main();
