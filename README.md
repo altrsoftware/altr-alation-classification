@@ -9,7 +9,7 @@
 
 # Alation Classification Integration
 
-The Alation Classification Integration is a tool to pass classification data of a database in ALTR into Alation.
+The ALTR + Alation Classification tool is used to pass classification data of a database in ALTR into Alation.
 
 This tool is plumbing between to available API's.
 * [ALTR Management  API](https://altrnet.live.altr.com/api/swagger/)
@@ -90,7 +90,7 @@ Alation Column after running the application:
 
 **1. You must add a custom fields to your Alation environment for this application to work successfully**
 
-    $ node customFieldMaker.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
+	$ node customFieldMaker.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
 
 1. Click the *Settings* icon at the top right of your Alation environment
 
@@ -110,21 +110,15 @@ Alation Column after running the application:
 
 **2. Fill out the .env file environment variables**
 
-    // ALATION
-    
-    ALATION_API_ACCESS_TOKEN = "Your Alation API Access Token"
-    
-    ALATION_DOMAIN = "Your Alation domain (example-prod.alationcatalog.com)"
-    
-    ALATION_EMAIL = "The email used to sign in and create the API Access Token"
-    
-    //ALTR
-    
-    ALTR_DOMAIN = "Your ALTR domain (example.live.altr.com)"
-    
-    ALTR_KEY_NAME = "Your ALTR API key name"
-    
-    ALTR_KEY_PASSWORD = "Your ALTR API key password"
+	// ALATION
+	ALATION_API_ACCESS_TOKEN = "Your Alation API Access Token"
+	ALATION_DOMAIN = "Your Alation domain (example-prod.alationcatalog.com)"
+	ALATION_EMAIL = "The email used to sign in and create the API Access Token"
+
+	//ALTR
+	ALTR_DOMAIN = "Your ALTR domain (example.live.altr.com)"
+	ALTR_KEY_NAME = "Your ALTR API key name"
+	ALTR_KEY_PASSWORD = "Your ALTR API key password"
 
   
   
@@ -138,22 +132,17 @@ Alation Column after running the application:
 
 This method will install the necessary packages needed to run the application for you.
 
-  
-
-    $ docker build -t altr/alation-classification-integration .
-    
-    $ docker run -d altr/alation-classification-integration
+	$ docker build -t altr/altr-alation-classification .  
+	
+	$ docker run -d altr/altr-alation-classification
 
   
 
 **Method 2: Manually**
 
-  
-
-    $ npm install
-
-    
-    $ node index.js
+	$ npm install
+	
+	$ node index.js
 
   
 

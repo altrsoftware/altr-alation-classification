@@ -11,7 +11,7 @@ let login = async (domain, account, password) => {
 	const url = encodeURI(`https://${domain}/login/`);
 
 	try {
-		const getLogin = await client.get(url);
+		await client.get(url);
 		console.log(jar.toJSON());
 
 		const postLoginOptions = {
@@ -20,10 +20,10 @@ let login = async (domain, account, password) => {
 
 		const data = querystring.stringify({ 'csrfmiddlewaretoken': jar.toJSON().cookies[0].value, 'ldap_user': account, 'password': password })
 
-		const postLogin = await client.post(url, data, postLoginOptions);
+		await client.post(url, data, postLoginOptions);
 		console.log(jar.toJSON());
 
-		const getLanding = await client.get(`https://${domain}/`);
+		await client.get(`https://${domain}/`);
 		console.log(jar.toJSON());
 
 	} catch (error) {
@@ -47,7 +47,7 @@ let buildOptions = (countries) => {
 let main = async () => {
 	try {
 		let domain = args.domain;
-		let response = await login(domain, args.account, args.password);
+		await login(domain, args.account, args.password);
 
 		let dataColumn = {
 			"field_type": "MULTI_PICKER",
