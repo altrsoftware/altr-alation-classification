@@ -75,13 +75,13 @@ Alation Column after running the application:
 
 **Install From Source**
 
-    $ git clone https://github.com/altrsoftware/altr-alation-classification.git
+	$ git clone https://github.com/altrsoftware/altr-alation-classification.git
 
-    $ cd altr-alation-classification
+	$ cd altr-alation-classification
 
 **Install npm packages**
 
-    $ npm install
+	$ npm install
 
   
   
@@ -90,7 +90,7 @@ Alation Column after running the application:
 
 **1. You must add a custom fields to your Alation environment for this application to work successfully**
 
-	$ node customFieldMaker.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
+	$ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
 
 1. Click the *Settings* icon at the top right of your Alation environment
 
