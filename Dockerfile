@@ -1,11 +1,17 @@
-FROM node:16
+FROM node:16-alpine3.16
 
-WORKDIR /app
+RUN apk add --no-cache tini
 
-COPY package*.json ./
+ENV NODE_ENV production
 
-RUN npm install
+USER node
 
-COPY . .
+WORKDIR /usr/src/app
 
-CMD ["node", "index.js"]
+COPY --chown=node:node package*.json ./
+
+RUN npm ci
+
+COPY --chown=node:node . .
+
+CMD ["tini", "node", "index.js"]

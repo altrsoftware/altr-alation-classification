@@ -9,11 +9,11 @@
 
 # Alation Classification Integration
 
-The Alation Classification Integration is a tool to pass classification data of a database in ALTR into Alation.
+The ALTR + Alation Classification tool is used to pass classification data of a database in ALTR into Alation.
 
 This tool is plumbing between to available API's.
-- [ALTR Management  API](https://altrnet.live.altr.com/api/swagger/)
-- [Alation API](https://developer.alation.com/dev/reference/refresh-access-token-overview)
+* [ALTR Management  API](https://altrnet.live.altr.com/api/swagger/)
+* [Alation API](https://developer.alation.com/dev/reference/refresh-access-token-overview)
 
   
   
@@ -28,13 +28,15 @@ The tool:
 
 1. gets all databases from ALTR that have a classification report
 
-2. gets the classifiers of said databases
+2. gets the classifier(s) of said databases
 
-3. gets the columns of said classifiers
+3. gets the columns of said classifier(s)
 
-4. gets corresponding Alation column data
+4. gets corresponding Alation columns
 
-5. adds classifier(s) to column in Alation
+5. updates *ALTR Classification* (Custom Field) with classifier(s) of each column
+
+6. updates *ALTR Classification Report* (Custom Field) in the Alation datasource page with a ALTR classification report overview
 
   
   
@@ -73,214 +75,74 @@ Alation Column after running the application:
 
 **Install From Source**
 
-  
+	$ git clone https://github.com/altrsoftware/altr-alation-classification.git
 
-$ git clone https://github.com/altrsoftware/altr-alation-classification.git
+	$ cd altr-alation-classification
 
-$ cd altr-alation-classification
+**Install npm packages**
+
+	$ npm install
 
   
   
 
 ## Before using the tool
 
-  
+**1. You must add a custom fields to your Alation environment for this application to work successfully**
 
-**1. You must add a custom field to your Alation environment for this application to work successfully**
+	$ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
 
-1. Click the settings gear in the top right of Alation
+1. Click the *Settings* icon at the top right of your Alation environment
 
-2. Under the *Catalog Admin* section, click *Customize Catalog*
+2. In the *Catalog Admin* section, click *Customize Catalog*
 
-3. Under the *Custom Fields* tab, add a *Multi-Select Pickers*
+3. Click the *Custom Templates* tab
 
-- *Name (plural)*: Classification Matches
+4. Under the *Data Object Templates* section, click *Column*
 
-- *Name (singular)*: Classification Match
+5. On the right side of the template, click *Insert* -> *Custom Field* -> *ALTR Classifications*
 
-- *Tooltip Text*: Classification from ALTR
+6. At the top of the template, click *Save*
 
-4. Click *+ Add Option* and each one from the list below
+7. Under the *Data Object Templates* section, click *Data Source*
 
-- AGE
-
-- DATE
-
-- ADVERTISING_ID
-
-- CREDIT_CARD_NUMBER
-
-- CREDIT_CARD_TRACKING_NUMBER
-
-- DATE_OF_BIRTH
-
-- DOMAIN_NAME
-
-- EMAIL_ADDRESS
-
-- ETHNIC_GROUP
-
-- FEMALE_NAME
-
-- FIRST_NAME
-
-- GENDER
-
-- GENERIC_ID
-
-- IBAN_CODE
-
-- HTTP_COOKIE
-
-- ICD9_CODE
-
-- ICD10_CODE
-
-- IMEI_HARDWARE_ID
-
-- IMSI_ID
-
-- IP_ADDRESS
-
-- LAST_NAME
-
-- LOCATION
-
-- MAC_ADDRESS
-
-- MAC_ADDRESS_LOCAL
-
-- MALE_NAME
-
-- MEDICAL_TERM
-
-- ORGANIZATION_NAME
-
-- PASSPORT
-
-- PERSON_NAME
-
-- PHONE_NUMBER
-
-- STREET_ADDRESS
-
-- SWIFT_CODE
-
-- STORAGE_SIGNED_POLICY_DOCUMENT
-
-- STORAGE_SIGNED_URL
-
-- TIME
-
-- URL
-
-- VEHICLE_IDENTIFICATION_NUMBER
-
-- AUTH_TOKEN
-
-- AWS_CREDENTIALS
-
-- AZURE_AUTH_TOKEN
-
-- BASIC_AUTH_HEADER
-
-- ENCRYPTION_KEY
-
-- GCP_API_KEY
-
-- GCP_CREDENTIALS
-
-- JSON_WEB_TOKEN
-
-- PASSWORD
-
-- WEAK_PASSWORD_HASH
-
-- XSRF_TOKEN
-
-- AMERICAN_BANKERS_CUSIP_ID
-
-- FDA_CODE
-
-- US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER
-
-- US_BANK_ROUTING_MICR
-
-- US_DEA_NUMBER
-
-- US_DRIVERS_LICENSE_NUMBER
-
-- US_EMPLOYER_IDENTIFICATION_NUMBER
-
-- US_HEALTHCARE_NPI
-
-- US_INDIVIDUAL_TAXPAYER_IDENTIFICATION_NUMBER
-
-- US_PASSPORT
-
-- US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
-
-- US_SOCIAL_SECURITY_NUMBER
-
-- US_STATE
-
-- US_TOLLFREE_PHONE_NUMBER
-
-- US_VEHICLE_IDENTIFICATION_NUMBER
-
-5. Under the *Custom Templates* tab, click *Column*
-
-6. On the right side of the template, click *Insert* -> *Custom Field* -> *Classification Matches*
-
-7. Save the template
-
-  
+8. Under the *Description* field, click *Insert* -> *Custom Field* -> *ALTR Classification Report*
 
 **2. Fill out the .env file environment variables**
 
-    // ALATION
-    
-    ALATION_API_ACCESS_TOKEN = "Your Alation API Access Token"
-    
-    ALATION_DOMAIN = "Your Alation domain (example-prod.alationcatalog.com)"
-    
-    ALATION_EMAIL = "The email used to sign in and create the Access Token"
-    
-    //ALTR
-    
-    ALTR_DOMAIN = "Your ALTR domain (example.live.altr.com)"
-    
-    ALTR_KEY_NAME = "Your ALTR API key name"
-    
-    ALTR_KEY_PASSWORD = "Your ALTR API key password"
+	// ALATION
+	ALATION_API_ACCESS_TOKEN = "Your Alation API Access Token"
+	ALATION_DOMAIN = "Your Alation domain (example-prod.alationcatalog.com)"
+	ALATION_EMAIL = "The email used to sign in and create the API Access Token"
+
+	//ALTR
+	ALTR_DOMAIN = "Your ALTR domain (example.live.altr.com)"
+	ALTR_KEY_NAME = "Your ALTR API key name"
+	ALTR_KEY_PASSWORD = "Your ALTR API key password"
 
   
   
 
 ## How To Use
 
-> **Warning**
-You must complete the **Before using the tool** section; otherwise, the integration will not work correctly.
+> **Warning:**
+> You must complete the **Before using the tool** section; otherwise, the integration will not work correctly.
 
 **Method 1: <a  href="https://www.docker.com/">Docker</a>**
 
 This method will install the necessary packages needed to run the application for you.
 
-  
-
-    $ docker build -t altr/alation-classification-integration .
-    
-    $ docker run -d altr/alation-classification-integration
+	$ docker build -t altr/altr-alation-classification .  
+	
+	$ docker run -d altr/altr-alation-classification
 
   
 
 **Method 2: Manually**
 
-  
-
-    $ npm install
-    
-    $ node index.js
+	$ npm install
+	
+	$ node index.js
 
   
 
@@ -288,19 +150,21 @@ This method will install the necessary packages needed to run the application fo
 
 This application was built using the following node packages and their respected version:
 
+* [axios](https://www.npmjs.com/package/axios/v/0.27.2) : 0.27.2
+
+* [axios-cookiejar-support](https://www.npmjs.com/package/axios-cookiejar-support/v/4.0.3) : 4.0.3
+
+* [axios-mock-adapter](https://www.npmjs.com/package/axios-mock-adapter/v/1.21.2) : 1.21.2
+
+* [dotenv](https://www.npmjs.com/package/dotenv/v/16.0.3) : 16.0.3
+
+* [jest](https://www.npmjs.com/package/jest/v/29.2.2) : 29.2.2
   
+* [node](https://nodejs.org/download/release/v16.0.0/) : 0.27.2
 
-- [node](https://nodejs.org/download/release/v16.0.0/) : 0.27.2
+* [tough-cookie](https://www.npmjs.com/package/tough-cookie/v/4.1.2) : 4.1.2
 
-- [dotenv](https://www.npmjs.com/package/dotenv/v/16.0.3) : 16.0.3
-
-- [axios](https://www.npmjs.com/package/axios/v/0.27.2) : 0.27.2
-
-- [snowflake-sdk](https://www.npmjs.com/package/snowflake-sdk/v/1.6.14) : 1.6.14
-
-- [axios-mock-adapter](https://www.npmjs.com/package/axios-mock-adapter/v/1.21.2) : 1.21.2
-
-- [jest](https://www.npmjs.com/package/jest/v/29.2.2) : 29.2.2
+* [yargs](https://www.npmjs.com/package/yargs/v/17.6.2) : 17.6.2
 
   
 
@@ -316,4 +180,4 @@ Email *application-engineers@altr.com* with a subject line of "Alation Classific
 
 ## License
 
-GNU General Public License](gnu-gpl-v3.0.md)
+[GNU General Public License](LICENSE.md)

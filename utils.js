@@ -2,44 +2,44 @@ const altr = require('./api/altrApi.js');
 const alation = require('./api/alationApi');
 require('dotenv').config();
 
-const altrAuth = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
+const ALTR_AUTH = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
 
 /**
  * Filters out classified ALTR databases to exclude ones that are not also in alation
- * @param {Array} classifiedAltrDbs 
- * @param {Array} alationDbs 
+ * @param {Array} classifiedAltrDbs ALTR databases that have been classified
+ * @param {Array} alationDbs Alation databases
  * @returns 
  */
 let filterClassifiedDbs = (classifiedAltrDbs, alationDbs) => {
-	let result = classifiedAltrDbs.filter(altrDb => {
+	return classifiedAltrDbs.filter(altrDb => {
 		return alationDbs.find(alationDb => {
-			return altrDb.dbname.toUpperCase() === alationDb.dbname.toUpperCase();
+			if (altrDb.dbname != null && alationDb.dbname != null) {
+				return altrDb.dbname.toUpperCase() === alationDb.dbname.toUpperCase();
+			}
 		});
 	});
-
-	if (result.length == 0) throw new Error('There are no matching databases between Alation and classified AlTR databases');
-
-	return result;
 }
 exports.filterClassifiedDbs = filterClassifiedDbs;
 
 
 /**
  * Gets classifiers of classified databases in ALTR
- * @param {Array} classifiedAltrDbs 
+ * @param {Array} classifiedAltrDbs ALTR databases that have been classified
  * @returns JS Map
  */
 let getClassifiers = async (classifiedAltrDbs) => {
-	if (classifiedAltrDbs.length == 0) throw new Error('classifiedAltrDbs is empty');
-
-	let classifiersOfDbs = new Map();
+	let classifications = new Map();
+	let totals = new Map();
 
 	try {
 		for (const db of classifiedAltrDbs) {
-			let classifiers = await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, altrAuth, db.dbid);
-			classifiersOfDbs.set(db.dbid, classifiers.data.Classifications);
+			let classifiers = await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, ALTR_AUTH, db.dbid);
+			if (classifiers.Classifications.length != 0) {
+				classifications.set(db.dbid, classifiers.Classifications);
+				totals.set(db.dbid, classifiers.Totals);
+			}
 		}
-		return classifiersOfDbs;
+		return { classifications, totals };
 	} catch (error) {
 		throw error;
 	}
@@ -49,23 +49,25 @@ exports.getClassifiers = getClassifiers;
 
 /**
  * Gets a list of columns in ALTR and the classifiers they fall under
- * @param {Array} classifiersOfDbs 
+ * @param {Array} classifications Classifications of databases data
  * @returns JS Array
  */
-let getColumnsWithClassifiers = async (classifiersOfDbs) => {
+let getColumnsWithClassifiers = async (classifications) => {
 	let columnsWithClassifiers = [];
 
 	try {
 		// LOOPS THROUGH CLASSIFIERS OF EACH DB, GETS THE COLUMNS UNDER EACH CLASSIFIER, BUILDS AN ARRAY OF COLUMNS WITH CLASSIFIERS
-		for (const [dbid, classifiers] of classifiersOfDbs.entries()) {
+		for (const [dbid, classifiers] of classifications.entries()) {
 			for (const classifier of classifiers) {
-				let columns = await altr.getColumnsOfClassifierOfDb(process.env.ALTR_DOMAIN, altrAuth, classifier.Type, dbid);
-				for (const column of columns.data) {
-					let classifiers = column.alsoAppearsAs;
-					classifiers.push(classifier.Type);
-					classifiers.sort();
-					let obj = { 'database': column.database, 'schema': column.schema, 'table': column.table, 'column': column.column, 'classifiers': classifiers };
-					columnsWithClassifiers.push(obj);
+				let columns = await altr.getColumnsOfClassifierOfDb(process.env.ALTR_DOMAIN, ALTR_AUTH, classifier.Type, dbid);
+				for (const column of columns) {
+					if (column != null) {
+						let classifiers = column.alsoAppearsAs;
+						classifiers.push(classifier.Type);
+						classifiers.sort();
+						let obj = { 'database': column.database, 'schema': column.schema, 'table': column.table, 'column': column.column, 'classifiers': classifiers };
+						columnsWithClassifiers.push(obj);
+					}
 				};
 			};
 		};
@@ -88,8 +90,7 @@ exports.getColumnsWithClassifiers = getColumnsWithClassifiers;
 
 /**
  * Gets list of objects with data to update custom field
- * @param {Array} columnsWithClassifiers 
- * @param {Number} customFieldId 
+ * @param {Array} columnsWithClassifiers Column data with its classifications
  * @returns JS Array
  */
 let getClassificationMatchesArray = async (columnsWithClassifiers) => {
@@ -97,12 +98,12 @@ let getClassificationMatchesArray = async (columnsWithClassifiers) => {
 
 	try {
 		// GET "CLASSIFICATION MATCHES" CUSTOM FIELD ID
-		let customFields = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'MULTI_PICKER', 'Classification Matches');
+		let customFields = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'MULTI_PICKER', 'ALTR Classifications');
+		if (customFields.length == 0) throw new Error('"ALTR Classifications" custom field was not found.')
 		let customFieldId = customFields[0].id;
 
 		// GETS LIST OF DATABASES AND SCHEMAS IN ALATION
 		const alationSchemas = await alation.getSchemas(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN);
-
 
 		// BUILDS OBJECT FOR CUSTOM FIELD UPDATE FOR EACH COLUMN 
 		for (const column of columnsWithClassifiers) {
@@ -125,3 +126,44 @@ let getClassificationMatchesArray = async (columnsWithClassifiers) => {
 	}
 };
 exports.getClassificationMatchesArray = getClassificationMatchesArray;
+
+/**
+ * 
+ * @param {Map} classificationReports ALTR classification report for each database
+ * @param {Array} alationDbs Alation databases
+ * @param {Array} classifiedAltrDbs ALTR databases that have been classified
+ * @returns JS Map
+ */
+let createRichTexts = (classificationReports, alationDbs, classifiedAltrDbs) => {
+	let richTextUpdates = new Map();
+
+	for (const [dbid, classifiers] of classificationReports.classifications.entries()) {
+		let altrDb = classifiedAltrDbs.find(db => dbid == db.dbid);
+		let alationDb = alationDbs.find(db => altrDb.dbname == db.dbname.toUpperCase());
+
+		if (!altrDb || !alationDb) continue;
+
+		let richText = "<div><div><table style=width: 100%;><thead><tr><th>CLASSIFIER</th><th>% OF COLUMNS IN DATABASE CLASSIFIED AS</th></tr></thead><tbody>";
+		for (const classifier of classifiers) {
+			richText += `<tr><td style=width: 50.0000%;>${classifier.Type}</td><td style=width: 50.0000%;>${classifier.Percent}%</td></tr>`;
+		}
+		let total = classificationReports.totals.get(dbid);
+		richText += `</tbody></table><p><br></p><p><strong>${total.ClassifiedColumns} of the ${total.TotalColumns} total columns were classified. (${total.PercentSuccesfullyClassified}%)</strong></p><p><em>This report is imported from ALTR.</em></p><p><em>It describes classifiers found in the database and the percentage of columns under said classifiers.</em></p></div></div>`;
+		richTextUpdates.set(alationDb.id, richText);
+	}
+
+	return richTextUpdates;
+};
+exports.createRichTexts = createRichTexts;
+
+/**
+ * Handles pagination of array
+ * @param {Array} array An array
+ * @param {Number} page_size Page size
+ * @param {Number} page_number Page Number
+ * @returns JS Array
+ */
+let paginate = (array, page_size, page_number) => {
+	return array.slice((page_number - 1) * page_size, page_number * page_size);
+}
+exports.paginate = paginate;

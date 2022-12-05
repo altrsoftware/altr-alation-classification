@@ -37,12 +37,21 @@ exports.putMultipleCustomFieldValues = putMultipleCustomFieldValues;
  * @param {String} name_plural The custom field name
  * @returns JS Array of Objects
  */
-let getMultipleCustomFields = async (alationDomain, alationApiAccessToken, field_type, name_plural) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${alationDomain}/integration/v2/custom_field/?field_type=${field_type}&name_plural=${name_plural}`),
-		headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
-	};
+let getMultipleCustomFields = async (alationDomain, alationApiAccessToken, field_type, name_plural, name_singular) => {
+	let options;
+	if (name_plural == null) {
+		options = {
+			method: 'GET',
+			url: encodeURI(`https://${alationDomain}/integration/v2/custom_field/?field_type=${field_type}&name_singular=${name_singular}`),
+			headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
+		};
+	} else {
+		options = {
+			method: 'GET',
+			url: encodeURI(`https://${alationDomain}/integration/v2/custom_field/?field_type=${field_type}&name_plural=${name_plural}`),
+			headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
+		};
+	}
 
 	try {
 		let response = await axios.request(options);
