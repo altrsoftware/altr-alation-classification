@@ -35,7 +35,7 @@ let getClassifiers = async (classifiedAltrDbs) => {
 		for (const db of classifiedAltrDbs) {
 			let classifiers = await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, ALTR_AUTH, db.dbid);
 			if (classifiers.Classifications.length != 0) {
-				classifications.set(db.dbid, classifiers.Classifications);
+				classifications.set(db.dbid, classifiers.Classifications.sort((a, b) => {return b.Percent - a.Percent}));
 				totals.set(db.dbid, classifiers.Totals);
 			}
 		}
