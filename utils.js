@@ -18,24 +18,29 @@ let filterClassifiedDbs = (classifiedAltrDbs, alationDbs) => {
 			}
 		});
 	});
-}
+};
 exports.filterClassifiedDbs = filterClassifiedDbs;
 
 
 /**
- * Gets classifiers of classified databases in ALTR
+ * Gets classification info of classified databases in ALTR
  * @param {Array} classifiedAltrDbs ALTR databases that have been classified
- * @returns JS Map
+ * @returns JS Object
  */
 let getClassifiers = async (classifiedAltrDbs) => {
 	let classifications = new Map();
 	let totals = new Map();
 
 	try {
+		// Loops through each ALTR database that has been classified
 		for (const db of classifiedAltrDbs) {
+			// Gets classifiers for database
 			let classifiers = await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, ALTR_AUTH, db.dbid);
 			if (classifiers.Classifications.length != 0) {
-				classifications.set(db.dbid, classifiers.Classifications.sort((a, b) => {return b.Percent - a.Percent}));
+				// Sorts classifiers in descending order of percentage of columns under classifier 
+				classifiers.Classifications = classifiers.Classifications.sort((a, b) => { return b.Percent - a.Percent });
+
+				classifications.set(db.dbid, classifiers.Classifications);
 				totals.set(db.dbid, classifiers.Totals);
 			}
 		}
@@ -48,7 +53,7 @@ let getClassifiers = async (classifiedAltrDbs) => {
 exports.getClassifiers = getClassifiers;
 
 /**
- * Gets a list of columns in ALTR and the classifiers they fall under
+ * Gets a list of ALTR columns under each classifier
  * @param {Array} classifications Classifications of databases data
  * @returns JS Array
  */
@@ -56,29 +61,37 @@ let getColumnsWithClassifiers = async (classifications) => {
 	let columnsWithClassifiers = [];
 
 	try {
-		// LOOPS THROUGH CLASSIFIERS OF EACH DB, GETS THE COLUMNS UNDER EACH CLASSIFIER, BUILDS AN ARRAY OF COLUMNS WITH CLASSIFIERS
+		// Loops through each database
 		for (const [dbid, classifiers] of classifications.entries()) {
+			// Loops through each classifier in classifier list
 			for (const classifier of classifiers) {
+				// Gets columns under classifier for database
 				let columns = await altr.getColumnsOfClassifierOfDb(process.env.ALTR_DOMAIN, ALTR_AUTH, classifier.Type, dbid);
+				// Loops through columns
 				for (const column of columns) {
 					if (column != null) {
-						let classifiers = column.alsoAppearsAs;
-						classifiers.push(classifier.Type);
-						classifiers.sort();
-						let obj = { 'database': column.database, 'schema': column.schema, 'table': column.table, 'column': column.column, 'classifiers': classifiers };
-						columnsWithClassifiers.push(obj);
+
+						// Checks if column has already been pushed to 'columnsWithClassifiers' as columns can be found under multiple classifiers
+						// If it has, update column in 'columnsWithClassifier' by adding classifier to column
+						let ob = columnsWithClassifiers.find((obj, i) => {
+							if (obj.database == column.database && obj.schema == column.schema && obj.column == column.column) {
+								columnsWithClassifiers[i].classifiers.push(`${classifier.Type}:${column.confidence}`);
+								return true;
+							}
+						});
+
+						// If column has not been found in 'columnsWithClassifier' push column data to 'columnsWithClassifier'
+						if (!ob) {
+							let classifiers = [];
+							classifiers.push(`${classifier.Type}:${column.confidence}`);
+							classifiers.sort();
+							let obj = { 'database': column.database, 'schema': column.schema, 'table': column.table, 'column': column.column, 'classifiers': classifiers };
+							columnsWithClassifiers.push(obj);
+						}
 					}
 				};
 			};
 		};
-
-		// FILTERS A COLUMNS ARRAY OF CLASSIFIERS TO REMOVE DUPLICATES
-		const seen = new Set();
-		columnsWithClassifiers = columnsWithClassifiers.filter(element => {
-			const duplicate = seen.has(element.database + '.' + element.schema + '.' + element.table + '.' + element.column);
-			seen.add(element.database + '.' + element.schema + '.' + element.table + '.' + element.column);
-			return !duplicate;
-		});
 
 		return columnsWithClassifiers;
 	} catch (error) {
@@ -95,17 +108,17 @@ exports.getColumnsWithClassifiers = getColumnsWithClassifiers;
  */
 let getClassificationMatchesArray = async (columnsWithClassifiers) => {
 	let objects = [];
+	let objectsConfidence = [];
 
 	try {
-		// GET "CLASSIFICATION MATCHES" CUSTOM FIELD ID
 		let customFields = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'MULTI_PICKER', 'ALTR Classifications');
 		if (customFields.length == 0) throw new Error('"ALTR Classifications" custom field was not found.')
 		let customFieldId = customFields[0].id;
 
-		// GETS LIST OF DATABASES AND SCHEMAS IN ALATION
+		// Gets list of schema's in Alation
 		const alationSchemas = await alation.getSchemas(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN);
 
-		// BUILDS OBJECT FOR CUSTOM FIELD UPDATE FOR EACH COLUMN 
+		// Build objects that are sent to Alation do update custom field for each column 
 		for (const column of columnsWithClassifiers) {
 			let altrSchemaName = column.database + '.' + column.schema;
 			let alationSchema = alationSchemas.find((schema) => schema.name.toUpperCase() == altrSchemaName.toUpperCase());
@@ -116,11 +129,18 @@ let getClassificationMatchesArray = async (columnsWithClassifiers) => {
 
 			let alationColumn = await alation.getColumn(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, alationDatabaseId, alationSchemaId, alationTableName, column.column);
 			let columnId = alationColumn[0].id;
+			let classifiers = [];
 
-			objects.push({ field_id: customFieldId, ts_updated: (new Date()).toISOString(), otype: 'attribute', oid: columnId, value: column.classifiers });
+			for (const classifierConfidence of column.classifiers) {
+				let classifier = classifierConfidence.split(':');
+				classifiers.push(classifier[0]);
+			}
+
+			objects.push({ field_id: customFieldId, ts_updated: (new Date()).toISOString(), otype: 'attribute', oid: columnId, value: classifiers });
+			objectsConfidence.push({ field_id: customFieldId, ts_updated: (new Date()).toISOString(), otype: 'attribute', oid: columnId, value: column.classifiers });
 		};
 
-		return objects;
+		return { objects, objectsConfidence };
 	} catch (error) {
 		throw error;
 	}
@@ -128,13 +148,13 @@ let getClassificationMatchesArray = async (columnsWithClassifiers) => {
 exports.getClassificationMatchesArray = getClassificationMatchesArray;
 
 /**
- * 
+ * Creates rich text values for ALTR Classification Report per database
  * @param {Map} classificationReports ALTR classification report for each database
  * @param {Array} alationDbs Alation databases
  * @param {Array} classifiedAltrDbs ALTR databases that have been classified
  * @returns JS Map
  */
-let createRichTexts = (classificationReports, alationDbs, classifiedAltrDbs) => {
+let createClassificationReportRichText = (classificationReports, alationDbs, classifiedAltrDbs) => {
 	let richTextUpdates = new Map();
 
 	for (const [dbid, classifiers] of classificationReports.classifications.entries()) {
@@ -154,7 +174,28 @@ let createRichTexts = (classificationReports, alationDbs, classifiedAltrDbs) => 
 
 	return richTextUpdates;
 };
-exports.createRichTexts = createRichTexts;
+exports.createClassificationReportRichText = createClassificationReportRichText;
+
+/**
+ * Creates rich text values for ALTR Classification Confidence per column
+ * @param {Array} objectsConfidence Objects that is sent to Alation do update custom field for each column
+ * @returns JS Map
+ */
+let createClassificationConfidenceRichText = (objectsConfidence) => {
+	let richTextUpdates = new Map();
+
+	for (const object of objectsConfidence) {
+		let richText = `<div><div><table style=width: 50%;><thead><tr><th>CLASSIFIER</th><th>CONFIDENCE SCORE</th></tr></thead><tbody>`;
+		for (const classifierConfidence of object.value) {
+			richText += `<tr><td style=width: 50.0000%;>${classifierConfidence.split(':')[0]}</td><td style=width: 50.0000%;>${classifierConfidence.split(':')[1]}</td></tr>`;
+		}
+		richText += `</tbody></table><p><br></p><p><em>This report is imported from ALTR.</em></p><p><em>It describes classifiers of the column and the confidence score for each classifier.</em></p><p><em>Possible scores are: VERY LIKELY, LIKELY, POSSIBLE</em></p></div></div>`;
+		richTextUpdates.set(object.oid, richText);
+	}
+
+	return richTextUpdates;
+};
+exports.createClassificationConfidenceRichText = createClassificationConfidenceRichText;
 
 /**
  * Handles pagination of array
@@ -165,5 +206,5 @@ exports.createRichTexts = createRichTexts;
  */
 let paginate = (array, page_size, page_number) => {
 	return array.slice((page_number - 1) * page_size, page_number * page_size);
-}
+};
 exports.paginate = paginate;
