@@ -34,7 +34,7 @@ The tool:
 
 4. gets corresponding Alation columns
 
-5. updates *ALTR Classification* (Custom Field) with classifier(s) of each column
+5. updates *ALTR Classification* & *ALTR Classification Confidence* (Custom Fields) with classifier(s) of each column
 
 6. updates *ALTR Classification Report* (Custom Field) in the Alation datasource page with a ALTR classification report overview
 
@@ -58,15 +58,25 @@ Integration Flowchart:
 
   
 
-Alation Column before running the application:
+Alation datasource page BEFORE running the application:
 
-<img  src="./imgs/before-running.png"  alt="Alation Column before running the application"  height="300">
+<img  src="./imgs/datasource-before.png"  alt="Alation Column before running the application"  height="300">
 
   
 
-Alation Column after running the application:
+Alation datasource page AFTER running the application:
 
-<img  src="./imgs/after-running.png"  alt="Alation Column after running the application"  height="300">
+<img  src="./imgs/datasource-after.png"  alt="Alation Column after running the application"  height="300">
+
+Alation column page BEFORE running the application:
+
+<img  src="./imgs/column-before.png"  alt="Alation Column before running the application"  height="300">
+
+  
+
+Alation column page AFTER running the application:
+
+<img  src="./imgs/column-after.png"  alt="Alation Column after running the application"  height="300">
 
   
   
@@ -107,6 +117,8 @@ Alation Column after running the application:
 7. Under the *Data Object Templates* section, click *Data Source*
 
 8. Under the *Description* field, click *Insert* -> *Custom Field* -> *ALTR Classification Report*
+
+9. Under the *ALTR Classification Report* field, click *Insert* -> *Custom Field* -> *ALTR Classification Confidence*
 
 **2. Fill out the .env file environment variables**
 
