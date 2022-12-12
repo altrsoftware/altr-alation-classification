@@ -46,10 +46,13 @@ let buildOptions = (countries) => {
 
 let main = async () => {
 	try {
+		if (!args.domain || !args.account || !args.password) {
+			throw Error('Missing environment variables: $ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>');
+		}
 		let domain = args.domain;
 		await login(domain, args.account, args.password);
 
-		let dataColumn = {
+		let altrClassification = {
 			"field_type": "MULTI_PICKER",
 			"name": "ALTR Classification",
 			"name_plural": "ALTR Classifications",
@@ -65,7 +68,7 @@ let main = async () => {
 			"tooltip_text": "Classification from ALTR"
 		};
 
-		let dataDatasource = {
+		let altrClassificationReport = {
 			"field_type": "RICH_TEXT",
 			"name": "ALTR Classification Report",
 			"name_singular": "ALTR Classification Report",
@@ -78,13 +81,28 @@ let main = async () => {
 			"tooltip_text": "Classification report overview from ALTR"
 		};
 
+		let altrClassificationConfidence = {
+			"field_type": "RICH_TEXT",
+			"name": "ALTR Classification Confidence",
+			"name_singular": "ALTR Classification Confidence",
+			"backref_name": "null",
+			"backref_tooltip_text": "null",
+			"allowed_otypes": [],
+			"builtin_name": "null",
+			"universal_field": "false",
+			"flavor": "DEFAULT",
+			"tooltip_text": "Classification confidence scores from ALTR"
+		};
 
 		let postCustomFieldOptions = { headers: { 'X-CSRFToken': jar.toJSON().cookies[0].value, 'Cookie': `csrftoken=${jar.toJSON().cookies[0].value}; sessionid=${jar.toJSON().cookies[1].value}`, 'Referer': `https://${domain}/login/` } };
-		let createCustomFieldColumn = await client.post(`https://${domain}/ajax/custom_field/`, dataColumn, postCustomFieldOptions);
-		console.log(createCustomFieldColumn.data);
+		let response = await client.post(`https://${domain}/ajax/custom_field/`, altrClassification, postCustomFieldOptions);
+		console.log(response.data);
 
-		let createCustomFieldDatasource = await client.post(`https://${domain}/ajax/custom_field/`, dataDatasource, postCustomFieldOptions);
-		console.log(createCustomFieldDatasource.data);
+		response = await client.post(`https://${domain}/ajax/custom_field/`, altrClassificationReport, postCustomFieldOptions);
+		console.log(response.data);
+
+		response = await client.post(`https://${domain}/ajax/custom_field/`, altrClassificationConfidence, postCustomFieldOptions);
+		console.log(response.data);
 	} catch (error) {
 		console.log(error);
 		return;

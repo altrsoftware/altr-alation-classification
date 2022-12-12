@@ -47,8 +47,9 @@ let main = async () => {
 			console.dir(columnsWithClassifiers, { depth: null });
 
 			// Loop through columns, get corresponding Alation column data and build list of column/classifier objects for custom field value update
-			let objects = [];
-			objects = await utils.getClassificationMatchesArray(columnsWithClassifiers);
+			let obj = await utils.getClassificationMatchesArray(columnsWithClassifiers);
+			let objects = obj.objects;
+			let objectsConfidence = obj.objectsConfidence;
 			console.log('\nUPDATE ALATION CUSTOM FIELD VALUE OBJECTS: ' + objects.length);
 			console.dir(objects, { depth: null });
 
@@ -66,7 +67,7 @@ let main = async () => {
 			if (richTextCustomField.length != 0) {
 				let richTextCustomFieldId = richTextCustomField[0].id;
 
-				let richTexts = utils.createRichTexts(classificationReports, alationDbs, classifiedAltrDbs);
+				let richTexts = utils.createClassificationReportRichText(classificationReports, alationDbs, classifiedAltrDbs);
 				for (const richTextUpdate of richTexts.entries()) {
 					let obj = { field_id: richTextCustomFieldId, ts_updated: (new Date()).toISOString(), oid: richTextUpdate[0], value: richTextUpdate[1], otype: 'data' };
 					let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, [obj]);
@@ -75,6 +76,25 @@ let main = async () => {
 				}
 			}
 
+			// Sends classification confidence to classified columns
+			richTextCustomField = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'RICH_TEXT', null, 'ALTR Classification Confidence');
+			if (richTextCustomField.length != 0) {
+				let richTextCustomFieldId = richTextCustomField[0].id;
+
+				let richTexts = utils.createClassificationConfidenceRichText(objectsConfidence);
+				let objects = [];
+				for (const richTextUpdate of richTexts.entries()) {
+					objects.push({ field_id: richTextCustomFieldId, ts_updated: (new Date()).toISOString(), oid: richTextUpdate[0], value: richTextUpdate[1], otype: 'attribute' });
+				}
+
+				for (let i = 1; i <= objects.length / objPerRequest + 1; i++) {
+					let obj = utils.paginate(objects, objPerRequest, i);
+					let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, obj);
+					console.log('\nALATION CUSTOM FIELD (ALTR Classification Confidence) UPDATE RESULT:')
+					console.log(response);
+				}
+			}
+			
 			console.log('\nEFFECTED DATABASES:');
 			console.log(classifiedAltrDbs);
 
