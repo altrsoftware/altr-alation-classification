@@ -74,7 +74,7 @@ let getColumnsWithClassifiers = async (classifications) => {
 						// Checks if column has already been pushed to 'columnsWithClassifiers' as columns can be found under multiple classifiers
 						// If it has, update column in 'columnsWithClassifier' by adding classifier to column
 						let ob = columnsWithClassifiers.find((obj, i) => {
-							if (obj.database == column.database && obj.schema == column.schema && obj.column == column.column) {
+							if (obj.database == column.database && obj.schema == column.schema && obj.table == column.fullyQualifiedTableName.split(`.`)[1] && obj.column == column.column) {
 								columnsWithClassifiers[i].classifiers.push(`${classifier.Type}:${column.confidence}`);
 								return true;
 							}
