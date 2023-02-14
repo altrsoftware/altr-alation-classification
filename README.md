@@ -123,7 +123,7 @@ Alation column page AFTER running the application:
 **2. Fill out the .env file environment variables**
 
 	// ALATION
-	ALATION_API_ACCESS_TOKEN = "Your Alation API Access Token"
+	ALATION_API_ACCESS_TOKEN = "Your Alation API Access Token" 
 	ALATION_DOMAIN = "Your Alation domain (example-prod.alationcatalog.com)"
 	ALATION_EMAIL = "The email used to sign in and create the API Access Token"
 
@@ -132,7 +132,7 @@ Alation column page AFTER running the application:
 	ALTR_KEY_NAME = "Your ALTR API key name"
 	ALTR_KEY_PASSWORD = "Your ALTR API key password"
 
-  
+Alation API Access Token information found here. https://developer.alation.com/dev/docs/authentication-into-alation-apis
   
 
 ## How To Use
