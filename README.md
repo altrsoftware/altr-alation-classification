@@ -193,3 +193,10 @@ Email *application-engineers@altr.com* with a subject line of "Alation Classific
 ## License
 
 [GNU General Public License](LICENSE.md)
+
+## Additional Resources
+https://docs.altr.com/
+
+https://www.youtube.com/channel/UCcqDY0wrRlQ8hQ_mjJNfkAA
+
+https://www.altr.com/resources
