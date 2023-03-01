@@ -14,26 +14,30 @@ afterEach(() => {
 });
 
 describe('TESTING getClassifiedDbs()', () => {
-	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/classification/databases/?classificationCompleted=true`);
+	const url = encodeURI(
+		`https://${process.env.ALTR_DOMAIN}/api/classification/databases/?classificationCompleted=true`
+	);
 
 	describe('When the call is successful', () => {
 		it('Shall return an array of databases', async () => {
-			const expected = [{
-				"dbid": 0,
-				"friendlyDatabaseName": "string",
-				"classified": true
-			}, {
-				"dbid": 1,
-				"friendlyDatabaseName": "string",
-				"classified": true
-			}];
+			const expected = {
+				data: [
+					{
+						dbid: 1,
+						dbfriendlyname: 'My Database',
+						dbname: 'EMPLOYEES',
+						classified: true,
+					},
+				],
+				success: true,
+			};
 
 			mock.onGet(url).reply(200, expected);
 
-			const result = await altr.getClassifiedDbs(process.env.ALTR_DOMAIN);
+			const result = await altr.getClassifiedDbs(process.env.ALTR_DOMAIN, null);
 
 			expect(mock.history.get[0].url).toEqual(url);
-			expect(result).toEqual(expected);
+			expect(result).toEqual(expected.data);
 		});
 	});
 
@@ -41,7 +45,7 @@ describe('TESTING getClassifiedDbs()', () => {
 		it('Shall retry and throw an error', async () => {
 			const expectedError = async () => {
 				await altr.getClassifiedDbs(process.env.ALTR_DOMAIN);
-			}
+			};
 
 			await expect(expectedError()).rejects.toThrowError();
 		});
@@ -49,27 +53,29 @@ describe('TESTING getClassifiedDbs()', () => {
 });
 
 describe('TESTING getDb()', () => {
-	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/databases/${0}`);
+	const url = encodeURI(
+		`https://${process.env.ALTR_DOMAIN}/api/databases/${0}`
+	);
 
 	describe('When the call is successful', () => {
 		it('Shall return an object', async () => {
 			const expected = {
-				"id": 0,
-				"friendlyDatabaseName": "string",
-				"maxNumberOfConnections": 0,
-				"maxNumberOfBatches": 0,
-				"databasePort": 0,
-				"databaseUsername": "string",
-				"databaseType": "sqlserver",
-				"databaseName": "string",
-				"hostname": "string",
-				"connectionString": true,
-				"clientId": "string",
-				"snowflakeRole": "string",
-				"warehouseName": "string",
-				"SFCount": 0,
-				"dataUsageHistory": true,
-				"classificationStarted": true
+				id: 0,
+				friendlyDatabaseName: 'string',
+				maxNumberOfConnections: 0,
+				maxNumberOfBatches: 0,
+				databasePort: 0,
+				databaseUsername: 'string',
+				databaseType: 'sqlserver',
+				databaseName: 'string',
+				hostname: 'string',
+				connectionString: true,
+				clientId: 'string',
+				snowflakeRole: 'string',
+				warehouseName: 'string',
+				SFCount: 0,
+				dataUsageHistory: true,
+				classificationStarted: true,
 			};
 
 			mock.onGet(url).reply(200, expected);
@@ -85,7 +91,7 @@ describe('TESTING getDb()', () => {
 		it('Shall throw an error', async () => {
 			const expectedError = async () => {
 				await altr.getDb(process.env.ALTR_DOMAIN);
-			}
+			};
 
 			await expect(expectedError()).rejects.toThrowError();
 		});
@@ -93,31 +99,40 @@ describe('TESTING getDb()', () => {
 });
 
 describe('TESTING getClassifiersOfDb()', () => {
-	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/classification/classifiers/${0}`);
+	const url = encodeURI(
+		`https://${process.env.ALTR_DOMAIN}/api/classification/classifiers/${0}`
+	);
 
 	describe('When the call is successful', () => {
 		it('Shall return an object', async () => {
 			const expected = {
-				"Classifications": [
-					{
-						"Type": "string",
-						"Amount": 0,
-						"Percent": 0
-					}
-				],
-				"Totals": {
-					"ClassifiedColumns": 0,
-					"TotalColumns": 0,
-					"PercentSuccesfullyClassified": 0
-				}
+				data: {
+					Classifications: [
+						{
+							Type: 'PERSON_NAME',
+							Amount: 44,
+							Percent: 22.53,
+						},
+					],
+					Totals: {
+						ClassifiedColumns: 200,
+						TotalColumns: 600,
+						PercentSuccesfullyClassified: 37.63,
+					},
+				},
+				success: true,
 			};
 
 			mock.onGet(url).reply(200, expected);
 
-			const result = await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, '', 0);
+			const result = await altr.getClassifiersOfDb(
+				process.env.ALTR_DOMAIN,
+				'',
+				0
+			);
 
 			expect(mock.history.get[0].url).toEqual(url);
-			expect(result).toEqual(expected);
+			expect(result).toEqual(expected.data);
 		});
 	});
 
@@ -125,7 +140,7 @@ describe('TESTING getClassifiersOfDb()', () => {
 		it('Shall throw an error', async () => {
 			const expectedError = async () => {
 				await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, '', 0);
-			}
+			};
 
 			await expect(expectedError()).rejects.toThrowError();
 		});
@@ -133,43 +148,61 @@ describe('TESTING getClassifiersOfDb()', () => {
 });
 
 describe('TESTING getColumnsOfClassifierOfDb()', () => {
-	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/classification/columns/${'TEST'}/${0}`);
+	const url = encodeURI(
+		`https://${
+			process.env.ALTR_DOMAIN
+		}/api/classification/columns/${'TEST'}/${0}`
+	);
 
 	describe('When the call is successful', () => {
 		it('Shall return an array of objects', async () => {
-			const expected = [
-				{
-					"clientDatabaseID": 0,
-					"databaseTypeName": 0,
-					"databaseTypeID": 0,
-					"database": "string",
-					"schema": "string",
-					"table": "string",
-					"column": "string",
-					"classifier": [
-						"string"
-					],
-					"isGovernable": 0,
-					"isScatterable": 0,
-					"dataType": "string",
-					"dataState": "REGISTERED"
-				}
-			];
+			const expected = {
+				data: [
+					{
+						clientDatabaseID: 1,
+						databaseTypeName: 'SNOWFLAKEDB_EXTERNAL_FUNCTIONS',
+						databaseTypeID: 9,
+						database: 'COMPANY_DB',
+						schema: 'PUBLIC',
+						table: 'EMPLOYEES',
+						column: 'EMAIL',
+						classifier: ['FIRST_NAME'],
+						isGovernable: 0,
+						isScatterable: false,
+						dataType: 'VARCHAR',
+						confidence: 'LIKELY',
+						fullyQualifiedTableName: 'PUBLIC.EMPLOYEES',
+						alsoAppearsAs: ['EMAILS', 'EMAIL_ADDRESS'],
+						dataState: 'REGISTERED',
+					},
+				],
+				success: true,
+			};
 
 			mock.onGet(url).reply(200, expected);
 
-			const result = await altr.getColumnsOfClassifierOfDb(process.env.ALTR_DOMAIN, '', 'TEST', 0);
+			const result = await altr.getColumnsOfClassifierOfDb(
+				process.env.ALTR_DOMAIN,
+				'',
+				'TEST',
+				0
+			);
 
 			expect(mock.history.get[0].url).toEqual(url);
-			expect(result).toEqual(expected);
+			expect(result).toEqual(expected.data);
 		});
 	});
 
 	describe('When the call is unsuccessful', () => {
 		it('Shall throw an error', async () => {
 			const expectedError = async () => {
-				await altr.getColumnsOfClassifierOfDb(process.env.ALTR_DOMAIN, '', 'TEST', 0);
-			}
+				await altr.getColumnsOfClassifierOfDb(
+					process.env.ALTR_DOMAIN,
+					'',
+					'TEST',
+					0
+				);
+			};
 
 			await expect(expectedError()).rejects.toThrowError();
 		});
@@ -177,7 +210,9 @@ describe('TESTING getColumnsOfClassifierOfDb()', () => {
 });
 
 describe('TESTING getAdministrators()', () => {
-	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/administrators`);
+	const url = encodeURI(
+		`https://${process.env.ALTR_DOMAIN}/api/administrators`
+	);
 
 	describe('When the call is successful', () => {
 		it('Shall return true', async () => {
