@@ -9,6 +9,8 @@
 
 # Alation Classification Integration
 
+![Node workflow](https://github.com/altrsoftware/altr-alation-classification/actions/workflows/node.js.yml/badge.svg)    ![CodeQl workflow](https://github.com/altrsoftware/altr-alation-classification/actions/workflows/codeql.yml/badge.svg)
+
 The ALTR + Alation Classification tool is used to pass classification data of a database in ALTR into Alation.
 
 This tool is plumbing between to available API's.
