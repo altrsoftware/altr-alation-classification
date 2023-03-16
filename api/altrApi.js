@@ -1,138 +1,25 @@
+require('dotenv').config();
 const axios = require('axios').default;
 
-/**
- * Gets list of databases that have been classified by ALTR
- * @param {String} altrDomain The domain of your ALTR organization
- * @param {String} altrAuth Base64 encoded string using your ALTR API key and password 
- * @returns JS Array of Objects
- */
-let getClassifiedDbs = async (altrDomain, altrAuth) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${altrDomain}/api/classification/databases/?classificationCompleted=true`),
-		headers: { Authorization: `Basic ${altrAuth}`, accept: 'application/json' }
-	}
+// Builds base64 encoded string for ALTR API Auth
+const ALTR_AUTH = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
 
-	try {
-		const response = await axios.request(options);
-		return response.data.data;
-	} catch (error) {
-		console.error('GET classified databases error');
-		if (error.response) {
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-}
-exports.getClassifiedDbs = getClassifiedDbs;
+const altrAxios = axios.create({
+	headers: {
+		Authorization: `Basic ${ALTR_AUTH}`,
+	},
+	baseURL: encodeURI(`https://${process.env.ALTR_DOMAIN}/api`),
+});
 
 /**
- * Gets Snowflake databases in ALTR
- * @param {String} altrDomain The domain of your ALTR organization
- * @param {String} basicAuth Base64 encoded string using your ALTR API key and password 
- * @returns JS Array of Objects
+ * Gets administrators in ALTR organization.
+ *
+ * @async
+ * @returns {Promise<Boolean>} True || False
  */
-let getDb = async (altrDomain, basicAuth, dbId) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${altrDomain}/api/databases/${dbId}`),
-		headers: {
-			'Authorization': 'Basic ' + basicAuth,
-			'Content-Type': 'application/json'
-		}
-	};
-
+let getAdministrators = async () => {
 	try {
-		let response = await axios.request(options);
-		return response.data;
-	} catch (error) {
-		console.error('GET altr db error');
-		if (error.response) {
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-
-};
-exports.getDb = getDb;
-
-/**
- * Gets list of classifiers of database in ALTR
- * @param {String} altrDomain The domain of your ALTR organization
- * @param {String} altrAuth Base64 encoded string using your ALTR API key and password 
- * @param {Number} dbId The ID of the database
- * @returns JS Array of Objects
- */
-let getClassifiersOfDb = async (altrDomain, altrAuth, dbId) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${altrDomain}/api/classification/classifiers/${dbId}`),
-		headers: { Authorization: `Basic ${altrAuth}`, accept: 'application/json' }
-	}
-
-	try {
-		const response = await axios.request(options);
-		return response.data.data;
-	} catch (error) {
-		if (error.response) {
-			console.error('GET classifiers of database error');
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-}
-exports.getClassifiersOfDb = getClassifiersOfDb;
-
-/**
- * Gets columns of classifier in ALTR
- * @param {String} altrDomain The domain of your ALTR organization
- * @param {String} altrAuth Base64 encoded string using your ALTR API key and password 
- * @param {String} classifier The name of the classifier
- * @param {Number} dbId The ID of the database
- * @returns JS Array of Objects
- */
-let getColumnsOfClassifierOfDb = async (altrDomain, altrAuth, classifier, dbId) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${altrDomain}/api/classification/columns/${classifier}/${dbId}`),
-		headers: { Authorization: `Basic ${altrAuth}`, accept: 'application/json' }
-	};
-
-	try {
-		const response = await axios.request(options);
-		return response.data.data;
-	} catch (error) {
-		if (error.response) {
-			console.error('GET columns of classifier error');
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-}
-exports.getColumnsOfClassifierOfDb = getColumnsOfClassifierOfDb;
-
-/**
- * Gets list of administrators in ALTR organization
- * @param {String} altrDomain The domain of your ALTR organization
- * @param {String} altrAuth Base64 encoded string using your ALTR API key and password
- * @returns True || False
- */
-let getAdministrators = async (altrDomain, altrAuth) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${altrDomain}/api/administrators`),
-		headers: {
-			'Authorization': 'Basic ' + altrAuth,
-			'Content-Type': 'application/json'
-		}
-	};
-
-	try {
-		await axios.request(options);
+		await altrAxios.get(`/administrators`);
 		return true;
 	} catch (error) {
 		console.error('GET altr administrators error');
@@ -144,3 +31,69 @@ let getAdministrators = async (altrDomain, altrAuth) => {
 	}
 };
 exports.getAdministrators = getAdministrators;
+
+/**
+ * Gets classified databases in ALTR.
+ *
+ * @async
+ * @returns {Promise<Object[]>} Array of classified databases objects.
+ */
+let getClassifiedDatabases = async () => {
+	try {
+		const response = await altrAxios.get(`/classification/databases/?classificationCompleted=true`);
+		return response.data.data;
+	} catch (error) {
+		console.error('GET classified databases error');
+		if (error.response) {
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
+exports.getClassifiedDatabases = getClassifiedDatabases;
+
+/**
+ * Gets classification data for specified database.
+ *
+ * @async
+ * @param {Number} databaseId - The ID of the database.
+ * @returns {Promise<Object[]>} - Array of classification data for database.
+ */
+let getClassifiersOfDatabase = async (databaseId) => {
+	try {
+		const response = await altrAxios.get(`/classification/classifiers/${databaseId}`);
+		return response.data.data;
+	} catch (error) {
+		if (error.response) {
+			console.error('GET classifiers of database error');
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
+exports.getClassifiersOfDatabase = getClassifiersOfDatabase;
+
+/**
+ * Gets columns that fall under specified `classifier`.
+ *
+ * @async
+ * @param {String} classifier - Classifier.
+ * @param {Number} offset - Used for pagination.
+ * @returns {Promise<Object[]>} Array of columns objects.
+ */
+let getColumnsOfClassifier = async (classifier, offset) => {
+	try {
+		const response = await altrAxios.get(`/classification/columns/${classifier}?offset=${offset}&limit=50`);
+		return response.data.data;
+	} catch (error) {
+		if (error.response) {
+			console.error('GET columns of classifier error');
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
+exports.getColumnsOfClassifier = getColumnsOfClassifier;

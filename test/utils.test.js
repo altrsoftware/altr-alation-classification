@@ -15,10 +15,10 @@ afterEach(() => {
 	mock.reset();
 });
 
-describe('TESTING filterClassifiedDbs()', () => {
-	describe('When classifiedAltrDbs matches alationDbs', () => {
-		it('Shall return the same classifiedAltrDbs', () => {
-			const classifiedAltrDbs = [
+describe('TESTING getMatchingDatabases()', () => {
+	describe('When altrClassifiedDatabases matches alationDatabases', () => {
+		it('Shall return the same altrClassifiedDatabases', () => {
+			const altrClassifiedDatabases = [
 				{
 					dbid: 0,
 					dbfriendlyname: 'db_1',
@@ -27,7 +27,7 @@ describe('TESTING filterClassifiedDbs()', () => {
 				},
 			];
 
-			const alationDbs = [
+			const alationDatabases = [
 				{
 					dbtype: 'snowflake',
 					dbname: 'db_1',
@@ -42,16 +42,16 @@ describe('TESTING filterClassifiedDbs()', () => {
 				},
 			];
 
-			const expected = classifiedAltrDbs;
-			const result = utils.filterClassifiedDbs(classifiedAltrDbs, alationDbs);
+			const expected = altrClassifiedDatabases;
+			const result = utils.getMatchingDatabases(altrClassifiedDatabases, alationDatabases);
 
 			expect(result).toStrictEqual(expected);
 		});
 	});
 
-	describe('When classifiedAltrDbs has databases that are not in alationDbs', () => {
-		it('Shall filter out databases that are not in alationDbs and return those that are', () => {
-			const classifiedAltrDbs = [
+	describe('When altrClassifiedDatabases has databases that are not in alationDatabases', () => {
+		it('Shall filter out databases that are not in alationDatabases and return those that are', () => {
+			const altrClassifiedDatabases = [
 				{
 					dbid: 0,
 					dbfriendlyname: 'db_1',
@@ -66,7 +66,7 @@ describe('TESTING filterClassifiedDbs()', () => {
 				},
 			];
 
-			const alationDbs = [
+			const alationDatabases = [
 				{
 					dbtype: 'snowflake',
 					dbname: 'db_1',
@@ -83,15 +83,15 @@ describe('TESTING filterClassifiedDbs()', () => {
 					dbname: 'db_1',
 				},
 			];
-			const result = utils.filterClassifiedDbs(classifiedAltrDbs, alationDbs);
+			const result = utils.getMatchingDatabases(altrClassifiedDatabases, alationDatabases);
 
 			expect(result).toStrictEqual(expected);
 		});
 	});
 
-	describe('When alationDbs has databases that are not in classifiedAltrDbs', () => {
+	describe('When alationDatabases has databases that are not in altrClassifiedDatabases', () => {
 		it('Shall return databases that are in both', () => {
-			const classifiedAltrDbs = [
+			const altrClassifiedDatabases = [
 				{
 					dbid: 0,
 					dbfriendlyname: 'db_1',
@@ -100,7 +100,7 @@ describe('TESTING filterClassifiedDbs()', () => {
 				},
 			];
 
-			const alationDbs = [
+			const alationDatabases = [
 				{
 					dbtype: 'snowflake',
 					dbname: 'db_1',
@@ -123,15 +123,15 @@ describe('TESTING filterClassifiedDbs()', () => {
 					dbname: 'db_1',
 				},
 			];
-			const result = utils.filterClassifiedDbs(classifiedAltrDbs, alationDbs);
+			const result = utils.getMatchingDatabases(altrClassifiedDatabases, alationDatabases);
 
 			expect(result).toStrictEqual(expected);
 		});
 	});
 
-	describe('When classifiedAltrDbs and alationDbs have no matching databases', () => {
+	describe('When altrClassifiedDatabases and alationDatabases have no matching databases', () => {
 		it('Shall return an empty array', () => {
-			const classifiedAltrDbs = [
+			const altrClassifiedDatabases = [
 				{
 					dbid: 0,
 					dbfriendlyname: 'db_1',
@@ -140,7 +140,7 @@ describe('TESTING filterClassifiedDbs()', () => {
 				},
 			];
 
-			const alationDbs = [
+			const alationDatabases = [
 				{
 					dbtype: 'snowflake',
 					dbname: 'db_2',
@@ -151,7 +151,7 @@ describe('TESTING filterClassifiedDbs()', () => {
 
 			const expected = [];
 
-			const result = utils.filterClassifiedDbs(classifiedAltrDbs, alationDbs);
+			const result = utils.getMatchingDatabases(altrClassifiedDatabases, alationDatabases);
 
 			expect(result).toStrictEqual(expected);
 		});
@@ -159,20 +159,18 @@ describe('TESTING filterClassifiedDbs()', () => {
 });
 
 describe('TESTING getClassifiers()', () => {
-	const url = encodeURI(
-		`https://${process.env.ALTR_DOMAIN}/api/classification/classifiers/${0}`
-	);
+	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/classification/classifiers/${0}`);
 
-	describe('When classifiedAltrDbs is empty', () => {
+	describe('When altrClassifiedDatabases is empty', () => {
 		it('Shall return an empty object', async () => {
-			const classifiedAltrDbs = [];
+			const altrClassifiedDatabases = [];
 
 			const expected = {
 				classifications: new Map(),
 				totals: new Map(),
 			};
 
-			const result = await utils.getClassifiers(classifiedAltrDbs);
+			const result = await utils.getClassifiers(altrClassifiedDatabases);
 
 			expect(result).toStrictEqual(expected);
 		});
@@ -180,7 +178,7 @@ describe('TESTING getClassifiers()', () => {
 
 	describe('When classifiers exits for a database', () => {
 		it('Shall return a map of dbid : [classifiers]', async () => {
-			const classifiedAltrDbs = [
+			const altrClassifiedDatabases = [
 				{
 					dbid: 0,
 					dbfriendlyname: 'db_1',
@@ -208,9 +206,7 @@ describe('TESTING getClassifiers()', () => {
 			};
 
 			const classifications = new Map();
-			classifications.set(0, [
-				{ Amount: 1, Percent: 10.0, Type: 'TEST CLASSIFIER' },
-			]);
+			classifications.set(0, [{ Amount: 1, Percent: 10.0, Type: 'TEST CLASSIFIER' }]);
 
 			const totals = new Map();
 			totals.set(0, {
@@ -226,14 +222,14 @@ describe('TESTING getClassifiers()', () => {
 
 			mock.onGet(url).reply(200, classifiers);
 
-			const result = await utils.getClassifiers(classifiedAltrDbs);
+			const result = await utils.getClassifiers(altrClassifiedDatabases);
 			expect(result).toStrictEqual(expected);
 		});
 	});
 
-	describe('When getClassifiersOfDb() is unsuccessful', () => {
+	describe('When getClassifiersOfDatabase() is unsuccessful', () => {
 		it('Shall throw an error', async () => {
-			const classifiedAltrDbs = [
+			const altrClassifiedDatabases = [
 				{
 					dbid: 0,
 					dbfriendlyname: 'db_1',
@@ -266,7 +262,7 @@ describe('TESTING getClassifiers()', () => {
 
 			mock.onGet(url).reply(400, classifiers);
 
-			await expect(utils.getClassifiers(classifiedAltrDbs)).rejects.toThrow();
+			await expect(utils.getClassifiers(altrClassifiedDatabases)).rejects.toThrow();
 		});
 	});
 });

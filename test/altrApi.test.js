@@ -13,7 +13,7 @@ afterEach(() => {
 	mock.reset();
 });
 
-describe('TESTING getClassifiedDbs()', () => {
+describe('TESTING getClassifiedDatabases()', () => {
 	const url = encodeURI(
 		`https://${process.env.ALTR_DOMAIN}/api/classification/databases/?classificationCompleted=true`
 	);
@@ -34,7 +34,7 @@ describe('TESTING getClassifiedDbs()', () => {
 
 			mock.onGet(url).reply(200, expected);
 
-			const result = await altr.getClassifiedDbs(process.env.ALTR_DOMAIN, null);
+			const result = await altr.getClassifiedDatabases(process.env.ALTR_DOMAIN, null);
 
 			expect(mock.history.get[0].url).toEqual(url);
 			expect(result).toEqual(expected.data);
@@ -44,7 +44,7 @@ describe('TESTING getClassifiedDbs()', () => {
 	describe('When the call is unsuccessful', () => {
 		it('Shall retry and throw an error', async () => {
 			const expectedError = async () => {
-				await altr.getClassifiedDbs(process.env.ALTR_DOMAIN);
+				await altr.getClassifiedDatabases(process.env.ALTR_DOMAIN);
 			};
 
 			await expect(expectedError()).rejects.toThrowError();
@@ -53,9 +53,7 @@ describe('TESTING getClassifiedDbs()', () => {
 });
 
 describe('TESTING getDb()', () => {
-	const url = encodeURI(
-		`https://${process.env.ALTR_DOMAIN}/api/databases/${0}`
-	);
+	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/databases/${0}`);
 
 	describe('When the call is successful', () => {
 		it('Shall return an object', async () => {
@@ -98,10 +96,8 @@ describe('TESTING getDb()', () => {
 	});
 });
 
-describe('TESTING getClassifiersOfDb()', () => {
-	const url = encodeURI(
-		`https://${process.env.ALTR_DOMAIN}/api/classification/classifiers/${0}`
-	);
+describe('TESTING getClassifiersOfDatabase()', () => {
+	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/classification/classifiers/${0}`);
 
 	describe('When the call is successful', () => {
 		it('Shall return an object', async () => {
@@ -125,11 +121,7 @@ describe('TESTING getClassifiersOfDb()', () => {
 
 			mock.onGet(url).reply(200, expected);
 
-			const result = await altr.getClassifiersOfDb(
-				process.env.ALTR_DOMAIN,
-				'',
-				0
-			);
+			const result = await altr.getClassifiersOfDatabase(process.env.ALTR_DOMAIN, '', 0);
 
 			expect(mock.history.get[0].url).toEqual(url);
 			expect(result).toEqual(expected.data);
@@ -139,7 +131,7 @@ describe('TESTING getClassifiersOfDb()', () => {
 	describe('When the call is unsuccessful', () => {
 		it('Shall throw an error', async () => {
 			const expectedError = async () => {
-				await altr.getClassifiersOfDb(process.env.ALTR_DOMAIN, '', 0);
+				await altr.getClassifiersOfDatabase(process.env.ALTR_DOMAIN, '', 0);
 			};
 
 			await expect(expectedError()).rejects.toThrowError();
@@ -147,12 +139,8 @@ describe('TESTING getClassifiersOfDb()', () => {
 	});
 });
 
-describe('TESTING getColumnsOfClassifierOfDb()', () => {
-	const url = encodeURI(
-		`https://${
-			process.env.ALTR_DOMAIN
-		}/api/classification/columns/${'TEST'}/${0}`
-	);
+describe('TESTING getColumnsOfClassifierOfDatabase()', () => {
+	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/classification/columns/${'TEST'}/${0}`);
 
 	describe('When the call is successful', () => {
 		it('Shall return an array of objects', async () => {
@@ -181,12 +169,7 @@ describe('TESTING getColumnsOfClassifierOfDb()', () => {
 
 			mock.onGet(url).reply(200, expected);
 
-			const result = await altr.getColumnsOfClassifierOfDb(
-				process.env.ALTR_DOMAIN,
-				'',
-				'TEST',
-				0
-			);
+			const result = await altr.getColumnsOfClassifierOfDatabase(process.env.ALTR_DOMAIN, '', 'TEST', 0);
 
 			expect(mock.history.get[0].url).toEqual(url);
 			expect(result).toEqual(expected.data);
@@ -196,12 +179,7 @@ describe('TESTING getColumnsOfClassifierOfDb()', () => {
 	describe('When the call is unsuccessful', () => {
 		it('Shall throw an error', async () => {
 			const expectedError = async () => {
-				await altr.getColumnsOfClassifierOfDb(
-					process.env.ALTR_DOMAIN,
-					'',
-					'TEST',
-					0
-				);
+				await altr.getColumnsOfClassifierOfDatabase(process.env.ALTR_DOMAIN, '', 'TEST', 0);
 			};
 
 			await expect(expectedError()).rejects.toThrowError();
@@ -210,9 +188,7 @@ describe('TESTING getColumnsOfClassifierOfDb()', () => {
 });
 
 describe('TESTING getAdministrators()', () => {
-	const url = encodeURI(
-		`https://${process.env.ALTR_DOMAIN}/api/administrators`
-	);
+	const url = encodeURI(`https://${process.env.ALTR_DOMAIN}/api/administrators`);
 
 	describe('When the call is successful', () => {
 		it('Shall return true', async () => {

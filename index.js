@@ -1,114 +1,121 @@
-require('dotenv').config();
-const alation = require('./api/alationApi');
-const altr = require('./api/altrApi');
-const utils = require('./utils.js');
-
-// BUILDS BASE64 ENCODED STRING FOR ALTR API AUTH
-const ALTR_AUTH = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
+require(`dotenv`).config();
+const alation = require(`./api/alationApi`);
+const altr = require(`./api/altrApi`);
+const utils = require(`./utils.js`);
 
 let main = async () => {
-	console.time('Execution Time');
+	console.time(`Execution Time`);
 
-	let alationPermissions = await alation.getUsers(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, process.env.ALATION_EMAIL);
-	let altrPermissions = await altr.getAdministrators(process.env.ALTR_DOMAIN, ALTR_AUTH);
+	// Check if environment variables are set up correctly by attempting API calls to ALTR and Alation
+	let alationPermissions = await alation.getUsers();
+	let altrPermissions = await altr.getAdministrators();
+	if (!alationPermissions || !altrPermissions) {
+		console.error(`Permissions failed. Please check environment variables and try again.`);
+		return;
+	}
+	console.log(`Permissions check passed\n`);
 
-	if (altrPermissions && alationPermissions) {
-		console.log('Permissions Passed\n');
+	try {
+		// Get custom fields in Alation that will be updated with this script.
+		let [altrClassifications, altrClassificationConfidence, altrClassificationReport] =
+			await utils.getAllCustomFields();
+		console.log(`Necessary custom fields exists and are in correct state for operations.\n`);
 
-		try {
-			// Get list of databases in ALTR that have been classified 
-			let classifiedAltrDbs = await altr.getClassifiedDbs(process.env.ALTR_DOMAIN, ALTR_AUTH);
-			if (classifiedAltrDbs.length == 0) throw new Error('There are no classified databases in ALTR.');
-			console.log('\nCLASSIFIED ALTR DATABASES: ' + classifiedAltrDbs.length);
-			console.dir(classifiedAltrDbs, { depth: null });
+		// Get list of databases in ALTR that have been classified.
+		let altrClassifiedDatabases = await altr.getClassifiedDatabases();
 
-			// Get a list of databases from Alation
-			let alationDbs = await alation.getDatabases(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN);
-			if (alationDbs.length == 0) throw new Error('There are no databases in Alation.');
-			console.log('\nALATION DATABASES: ' + alationDbs.length);
-			console.dir(alationDbs, { depth: null });
+		// Error Handling & Logging
+		if (altrClassifiedDatabases.length == 0) throw new Error(`There are no classified databases in ALTR.`);
+		console.log(`\nCLASSIFIED ALTR DATABASES: ` + altrClassifiedDatabases.length);
+		console.log(utils.getDatabaseNames(altrClassifiedDatabases));
 
-			// Filter list of classified ALTR databases to only include databases that also exist in Alation
-			classifiedAltrDbs = utils.filterClassifiedDbs(classifiedAltrDbs, alationDbs);
-			if (classifiedAltrDbs.length == 0) throw new Error('No matching databases between Alation databases and classified ALTR databases.');
-			console.log('\nFILTERED CLASSIFIED ALTR DATABASES: ' + classifiedAltrDbs.length);
-			console.dir(classifiedAltrDbs, { depth: null });
+		// Get list of databases from Alation
+		let alationDatabases = await alation.getDatabases();
 
-			// Get list of classifiers per database
-			let classificationReports = new Map();
-			classificationReports = await utils.getClassifiers(classifiedAltrDbs);
-			console.log('\nCLASSIFICATION REPORTS: ');
-			console.dir(classificationReports, { depth: null });
+		// Error Handling & Logging
+		if (alationDatabases.length == 0) throw new Error(`There are no databases in Alation.`);
+		console.log(`\nALATION DATABASES: ` + alationDatabases.length);
+		console.log(utils.getDatabaseNames(alationDatabases));
 
-			// Get list of columns per classifier
-			let columnsWithClassifiers = [];
-			columnsWithClassifiers = await utils.getColumnsWithClassifiers(classificationReports.classifications);
-			console.log('\nALTR CLASSIFIED COLUMNS: ' + columnsWithClassifiers.length);
-			console.dir(columnsWithClassifiers, { depth: null });
+		// What: Filter list of classified ALTR databases to only include databases that also exist in Alation.
+		// Why: We will only do operations with databases that exist in both systems.
+		altrClassifiedDatabases = utils.getMatchingDatabases(altrClassifiedDatabases, alationDatabases);
 
-			// Loop through columns, get corresponding Alation column data and build list of column/classifier objects for custom field value update
-			let obj = await utils.getClassificationMatchesArray(columnsWithClassifiers);
-			let objects = obj.objects;
-			let objectsConfidence = obj.objectsConfidence;
-			console.log('\nUPDATE ALATION CUSTOM FIELD VALUE OBJECTS: ' + objects.length);
-			console.dir(objects, { depth: null });
+		// Error Handling & Logging
+		if (altrClassifiedDatabases.length == 0)
+			throw new Error(`No matching databases between Alation databases and classified ALTR databases.`);
+		console.log(`\nMATCHING CLASSIFIED ALTR DATABASES: ` + altrClassifiedDatabases.length);
+		console.log(utils.getDatabaseNames(altrClassifiedDatabases));
 
-			// Updates custom field, "Classification Matches", of columns with classification values
-			let objPerRequest = 50;
-			for (let i = 1; i <= objects.length / objPerRequest + 1; i++) {
-				let obj = utils.paginate(objects, objPerRequest, i);
-				let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, obj);
-				console.log('\nALATION CUSTOM FIELD (Classification Matches) UPDATE RESULT:')
-				console.log(response);
-			}
+		// What: Get classification data for each database (classifiers and totals).
+		// Why: We will use this data to fill out Alation Classification Report on the Datasource page.
+		let { classifiers, totals } = await utils.getClassificationData(altrClassifiedDatabases);
 
-			// Send classification report to data source page
-			let richTextCustomField = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'RICH_TEXT', null, 'ALTR Classification Report');
-			if (richTextCustomField.length != 0) {
-				let richTextCustomFieldId = richTextCustomField[0].id;
+		// What: Get list of unique classifier names.
+		// Why: We will use these classifiers to get columns that fall under said classifiers.
+		let classifiersList = utils.getUniqueClassifierNames(classifiers);
 
-				let richTexts = utils.createClassificationReportRichText(classificationReports, alationDbs, classifiedAltrDbs);
-				for (const richTextUpdate of richTexts.entries()) {
-					let obj = { field_id: richTextCustomFieldId, ts_updated: (new Date()).toISOString(), oid: richTextUpdate[0], value: richTextUpdate[1], otype: 'data' };
-					let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, [obj]);
-					console.log('\nALATION CUSTOM FIELD (ALTR Classification Report) UPDATE RESULT:')
-					console.log(response);
-				}
-			}
+		// What: Get columns from classified databases in ALTR that fall under each classifier.
+		// Why: We will use this data to update column pages in Alation with classifiers and confidence scores.
+		let columnToClassifierMap = await utils.getColumnsOfClassifiers(classifiersList, altrClassifiedDatabases);
 
-			// Sends classification confidence to classified columns
-			richTextCustomField = await alation.getMultipleCustomFields(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, 'RICH_TEXT', null, 'ALTR Classification Confidence');
-			if (richTextCustomField.length != 0) {
-				let richTextCustomFieldId = richTextCustomField[0].id;
+		// What: Filter list of Alation databases to only include databases that also exist in ALTR and are classified.
+		// Why: We use this data to get Alation columns. We filter it so we do not have to deal with irrelevant databases during operations.
+		alationDatabases = utils.getMatchingDatabases(alationDatabases, altrClassifiedDatabases);
 
-				let richTexts = utils.createClassificationConfidenceRichText(objectsConfidence);
-				let objects = [];
-				for (const richTextUpdate of richTexts.entries()) {
-					objects.push({ field_id: richTextCustomFieldId, ts_updated: (new Date()).toISOString(), oid: richTextUpdate[0], value: richTextUpdate[1], otype: 'attribute' });
-				}
+		// What: Get schemas from Alation databases
+		// Why: We need the schema ID's to get Alation columns
+		let alationSchemasMap = await utils.getAlationSchemas(alationDatabases);
 
-				for (let i = 1; i <= objects.length / objPerRequest + 1; i++) {
-					let obj = utils.paginate(objects, objPerRequest, i);
-					let response = await alation.putMultipleCustomFieldValues(process.env.ALATION_DOMAIN, process.env.ALATION_API_ACCESS_TOKEN, obj);
-					console.log('\nALATION CUSTOM FIELD (ALTR Classification Confidence) UPDATE RESULT:')
-					console.log(response);
-				}
-			}
-			
-			console.log('\nEFFECTED DATABASES:');
-			console.log(classifiedAltrDbs);
+		// What: Get columns from Alation
+		// Why: We need Alation column object data to update columns in Alation
+		let alationColumns = await utils.getAlationColumns(columnToClassifierMap, alationSchemasMap);
 
-		} catch (error) {
-			if (!error.response) console.error(error);
-			return;
-		}
-	} else {
-		console.log('Please check environment variables and try again.');
+		// What: Build objects that update custom field `ALTR Classification` for each column
+		// Why: We will pass this array of update objects into a PUT call to update Alation columns
+		let classificationMultiPickerUpdateObjects = utils.buildColumnMultiPickerUpdateObjects(
+			alationColumns,
+			altrClassifications
+		);
+
+		// What: Build objects that update custom field `ALTR Classification Confidence` for each column
+		// Why: We will pass this array of update objects into a PUT call to update Alation columns
+		let classificationConfidenceRichTextUpdateObjects = utils.buildColumnRichTextUpdateObjects(
+			alationColumns,
+			altrClassificationConfidence
+		);
+
+		// What: Build objects that update custom field `ALTR Classification Report` for each database
+		// Why: We will pass this array of update objects into a PUT call to update Alation datasources
+		let classificationReportRichTextUpdateObjects = utils.buildDatabaseRichTextUpdateObjects(
+			classifiers,
+			totals,
+			alationDatabases,
+			altrClassificationReport
+		);
+
+		// What: Make API calls to Alation to update custom fields for each classified database and classified column
+		let promises = [
+			alation.updateMultipleCustomFieldValues(classificationMultiPickerUpdateObjects).then((value) => {
+				return { field: 'Classifications', value: value };
+			}),
+			alation.updateMultipleCustomFieldValues(classificationConfidenceRichTextUpdateObjects).then((value) => {
+				return { field: 'Confidence', value: value };
+			}),
+			alation.updateMultipleCustomFieldValues(classificationReportRichTextUpdateObjects).then((value) => {
+				return { field: 'Report', value: value };
+			}),
+		];
+		let response = await Promise.allSettled(promises);
+
+		console.dir(response, { depth: null });
+	} catch (error) {
+		if (!error.response) console.error(error);
+		return;
 	}
 
-	console.timeEnd('Execution Time');
-}
-
+	console.timeEnd(`Execution Time`);
+	return;
+};
 
 main();
-
