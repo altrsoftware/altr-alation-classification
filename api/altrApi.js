@@ -1,5 +1,6 @@
-require('dotenv').config();
-const axios = require('axios').default;
+import * as dotenv from 'dotenv';
+dotenv.config();
+import axios from 'axios';
 
 // Builds base64 encoded string for ALTR API Auth
 const ALTR_AUTH = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
@@ -17,7 +18,7 @@ const altrAxios = axios.create({
  * @async
  * @returns {Promise<Boolean>} True || False
  */
-let getAdministrators = async () => {
+export const getAdministrators = async () => {
 	try {
 		await altrAxios.get(`/administrators`);
 		return true;
@@ -30,7 +31,6 @@ let getAdministrators = async () => {
 		return false;
 	}
 };
-exports.getAdministrators = getAdministrators;
 
 /**
  * Gets classified databases in ALTR.
@@ -38,7 +38,7 @@ exports.getAdministrators = getAdministrators;
  * @async
  * @returns {Promise<Object[]>} Array of classified databases objects.
  */
-let getClassifiedDatabases = async () => {
+export const getClassifiedDatabases = async () => {
 	try {
 		const response = await altrAxios.get(`/classification/databases/?classificationCompleted=true`);
 		return response.data.data;
@@ -51,7 +51,6 @@ let getClassifiedDatabases = async () => {
 		throw error;
 	}
 };
-exports.getClassifiedDatabases = getClassifiedDatabases;
 
 /**
  * Gets classification data for specified database.
@@ -60,7 +59,7 @@ exports.getClassifiedDatabases = getClassifiedDatabases;
  * @param {Number} databaseId - The ID of the database.
  * @returns {Promise<Object[]>} - Array of classification data for database.
  */
-let getClassifiersOfDatabase = async (databaseId) => {
+export const getClassifiersOfDatabase = async (databaseId) => {
 	try {
 		const response = await altrAxios.get(`/classification/classifiers/${databaseId}`);
 		return response.data.data;
@@ -73,7 +72,6 @@ let getClassifiersOfDatabase = async (databaseId) => {
 		throw error;
 	}
 };
-exports.getClassifiersOfDatabase = getClassifiersOfDatabase;
 
 /**
  * Gets columns that fall under specified `classifier`.
@@ -83,7 +81,7 @@ exports.getClassifiersOfDatabase = getClassifiersOfDatabase;
  * @param {Number} offset - Used for pagination.
  * @returns {Promise<Object[]>} Array of columns objects.
  */
-let getColumnsOfClassifier = async (classifier, offset) => {
+export const getColumnsOfClassifier = async (classifier, offset) => {
 	try {
 		const response = await altrAxios.get(`/classification/columns/${classifier}?offset=${offset}&limit=50`);
 		return response.data.data;
@@ -96,4 +94,3 @@ let getColumnsOfClassifier = async (classifier, offset) => {
 		throw error;
 	}
 };
-exports.getColumnsOfClassifier = getColumnsOfClassifier;

@@ -13,5 +13,6 @@
 	},
 	"scripts": {
 		"test": "jest --verbose --coverage --silent"
-	}
+	},
+	"type": "module"
 }

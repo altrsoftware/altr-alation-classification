@@ -1,8 +1,8 @@
-const { default: axios } = require('axios');
-const { CookieJar } = require('tough-cookie');
-const { wrapper } = require('axios-cookiejar-support');
-const querystring = require('querystring');
-const args = require('yargs').argv;
+import axios from 'axios';
+import { wrapper } from 'axios-cookiejar-support';
+import { CookieJar } from 'tough-cookie';
+import { stringify } from 'querystring';
+import { args } from 'yargs';
 
 const jar = new CookieJar();
 const client = wrapper(axios.create({ jar }));
@@ -18,7 +18,7 @@ let login = async (domain, account, password) => {
 			headers: { Referer: url },
 		};
 
-		const data = querystring.stringify({
+		const data = stringify({
 			csrfmiddlewaretoken: jar.toJSON().cookies[0].value,
 			ldap_user: account,
 			password: password,

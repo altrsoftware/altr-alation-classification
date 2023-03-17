@@ -1,7 +1,6 @@
-require(`dotenv`).config();
-const alation = require(`./api/alationApi`);
-const altr = require(`./api/altrApi`);
-const utils = require(`./utils.js`);
+import * as alation from './api/alationApi.js';
+import * as altr from './api/altrApi.js';
+import * as utils from './utils.js';
 
 let main = async () => {
 	console.time(`Execution Time`);

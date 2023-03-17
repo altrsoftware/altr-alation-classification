@@ -1,5 +1,5 @@
-const altr = require('./api/altrApi.js');
-const alation = require('./api/alationApi');
+import * as alation from './api/alationApi.js';
+import * as altr from './api/altrApi.js';
 
 /**
  * Gets necessary Alation custom fields for scripts operations.
@@ -8,7 +8,7 @@ const alation = require('./api/alationApi');
  * @returns {Promise<Object[]>} An array of three custom fields.
  * @throws {Error} If there was an error while retrieving custom fields or if any of the required custom fields do not exist / have duplicates.
  */
-const getAllCustomFields = async () => {
+export const getAllCustomFields = async () => {
 	const promises = [
 		alation.getMultipleCustomFields(`MULTI_PICKER`, `ALTR Classification`),
 		alation.getMultipleCustomFields(`RICH_TEXT`, `ALTR Classification Confidence`),
@@ -28,7 +28,6 @@ const getAllCustomFields = async () => {
 		throw error;
 	}
 };
-exports.getAllCustomFields = getAllCustomFields;
 
 /**
  * Gets an array of database objects from the first array (`databasesOne`) that have a matching `dbname` property
@@ -38,12 +37,11 @@ exports.getAllCustomFields = getAllCustomFields;
  * @param {Object[]} databasesTwo - An array of database objects to compare against.
  * @returns {Object[]} An array of database objects that have a matching `dbname` property.
  */
-const getMatchingDatabases = (databasesOne, databasesTwo) => {
+export const getMatchingDatabases = (databasesOne, databasesTwo) => {
 	return databasesOne.filter((databaseOne) =>
 		databasesTwo.find((databaseTwo) => databaseOne.dbname?.toUpperCase() === databaseTwo.dbname?.toUpperCase())
 	);
 };
-exports.getMatchingDatabases = getMatchingDatabases;
 
 /**
  * Gets an array of database names from an array of database objects.
@@ -51,10 +49,9 @@ exports.getMatchingDatabases = getMatchingDatabases;
  * @param {Object[]} databases - An array of database objects.
  * @returns {String[]} An array of database names.
  */
-const getDatabaseNames = (databases) => {
+export const getDatabaseNames = (databases) => {
 	return databases.map((database) => database.dbname);
 };
-exports.getDatabaseNames = getDatabaseNames;
 
 /**
  * Gets classification data from ALTR for specified `altrClassifiedDatabases`.
@@ -63,7 +60,7 @@ exports.getDatabaseNames = getDatabaseNames;
  * @param {Object[]} altrClassifiedDatabases - An array of databases objects.
  * @returns {Promise<{ classifiers: Map<String, Object[]>, totals: Map<String, Object> }>} Two Maps: {Database -> [Classifiers]} & {Database -> Totals}.
  */
-const getClassificationData = async (altrClassifiedDatabases) => {
+export const getClassificationData = async (altrClassifiedDatabases) => {
 	// Create an array of promises
 	const promises = altrClassifiedDatabases.map((database) => {
 		return altr.getClassifiersOfDatabase(database.dbid).then((response) => {
@@ -86,7 +83,6 @@ const getClassificationData = async (altrClassifiedDatabases) => {
 
 	return { classifiers, totals };
 };
-exports.getClassificationData = getClassificationData;
 
 /**
  * Gets an array of unique classifier names from a map of classifiers.
@@ -94,7 +90,7 @@ exports.getClassificationData = getClassificationData;
  * @param {Map<String, Object[]>} classifiers - A map of classifiers.
  * @returns {String[]} An array of unique classifier names.
  */
-const getUniqueClassifierNames = (classifiers) => {
+export const getUniqueClassifierNames = (classifiers) => {
 	let uniqueClassifierNames = new Set();
 	for (const [key, value] of classifiers) {
 		for (const classifier of value) {
@@ -104,7 +100,6 @@ const getUniqueClassifierNames = (classifiers) => {
 
 	return [...uniqueClassifierNames];
 };
-exports.getUniqueClassifierNames = getUniqueClassifierNames;
 
 /**
  * Gets columns of each classifier in `classifiers`.
@@ -115,7 +110,7 @@ exports.getUniqueClassifierNames = getUniqueClassifierNames;
  * @param {Object[]} altrClassifiedDatabases - An array of database objects.
  * @returns {Promise<Map<String, String[]>>} A Map: {Column -> [Classifier:Confidence]}.
  */
-const getColumnsOfClassifiers = async (classifiers, altrClassifiedDatabases) => {
+export const getColumnsOfClassifiers = async (classifiers, altrClassifiedDatabases) => {
 	// Get all classified columns for each classifier
 	let allClassifiedColumns = [];
 	for (const classifier of classifiers) {
@@ -164,7 +159,6 @@ const getColumnsOfClassifiers = async (classifiers, altrClassifiedDatabases) => 
 
 	return columnsMap;
 };
-exports.getColumnsOfClassifiers = getColumnsOfClassifiers;
 
 /**
  * Gets schemas in Alation for specified `alationDatabase`.
@@ -174,7 +168,7 @@ exports.getColumnsOfClassifiers = getColumnsOfClassifiers;
  * @param {Object[]} alationDatabases - An array of database objects to retrieve schemas from.
  * @returns {Promise<Map<string,Object>>} A Map: {schema hash IDs -> schema object}.
  */
-const getAlationSchemas = async (alationDatabases) => {
+export const getAlationSchemas = async (alationDatabases) => {
 	// Get all schemas in Alation for specified `alationDatabases`
 	let alationSchemas = [];
 	const promises = alationDatabases.map((database) => {
@@ -196,7 +190,6 @@ const getAlationSchemas = async (alationDatabases) => {
 	}
 	return alationSchemaMap;
 };
-exports.getAlationSchemas = getAlationSchemas;
 
 /**
  * Gets columns from Alation for each column in the provided `columnToClassifierMap`.
@@ -206,7 +199,7 @@ exports.getAlationSchemas = getAlationSchemas;
  * @param {Map<string,Object>} alationSchemasMap - A map of schema hash IDs to their corresponding schema objects.
  * @returns {Promise<Object[]>} An array of column objects with their classifiers added.
  */
-const getAlationColumns = async (columnToClassifierMap, alationSchemasMap) => {
+export const getAlationColumns = async (columnToClassifierMap, alationSchemasMap) => {
 	let promises = [];
 	console.time(`Get Alation Columns`);
 	for (const [key, value] of columnToClassifierMap) {
@@ -254,7 +247,6 @@ const getAlationColumns = async (columnToClassifierMap, alationSchemasMap) => {
 
 	return promises;
 };
-exports.getAlationColumns = getAlationColumns;
 
 /**
  * Builds an array of update objects for a multi-picker custom field that based on the provided columns..
@@ -263,7 +255,7 @@ exports.getAlationColumns = getAlationColumns;
  * @param {Object[]} customField - An array of contains custom fields.
  * @returns {Objects[]} An array of custom field update objects containing an update object for each column.
  */
-const buildColumnMultiPickerUpdateObjects = (columns, customField) => {
+export const buildColumnMultiPickerUpdateObjects = (columns, customField) => {
 	let customFieldId = customField[0].id;
 	return columns.map((column) => {
 		let classifierArray = column.classifiers.map((classifier) => classifier.split(`:`)[0]);
@@ -277,7 +269,6 @@ const buildColumnMultiPickerUpdateObjects = (columns, customField) => {
 		};
 	});
 };
-exports.buildColumnMultiPickerUpdateObjects = buildColumnMultiPickerUpdateObjects;
 
 /**
  * Builds an array of update objects for a rich-text custom field that based on the provided columns.
@@ -286,7 +277,7 @@ exports.buildColumnMultiPickerUpdateObjects = buildColumnMultiPickerUpdateObject
  * @param {Object[]} customField - An array of contains custom fields.
  * @returns {Objects[]} An array of custom field update objects containing an update object for each column.
  */
-const buildColumnRichTextUpdateObjects = (columns, customField) => {
+export const buildColumnRichTextUpdateObjects = (columns, customField) => {
 	let customFieldId = customField[0].id;
 
 	return columns.map((column) => {
@@ -300,7 +291,6 @@ const buildColumnRichTextUpdateObjects = (columns, customField) => {
 		};
 	});
 };
-exports.buildColumnRichTextUpdateObjects = buildColumnRichTextUpdateObjects;
 
 /**
  * Builds an array of update objects for a rich-text custom field that based on the provided classifiers and totals.
@@ -311,7 +301,7 @@ exports.buildColumnRichTextUpdateObjects = buildColumnRichTextUpdateObjects;
  * @param {Object[]} customField - An array of contains custom fields.
  * @returns {Object[]} An array of custom field update objects containing an update object for each column.m
  */
-const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationDatabases, customField) => {
+export const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationDatabases, customField) => {
 	let customFieldId = customField[0].id;
 
 	return alationDatabases.map((database) => {
@@ -337,7 +327,6 @@ const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationDatabase
 		};
 	});
 };
-exports.buildDatabaseRichTextUpdateObjects = buildDatabaseRichTextUpdateObjects;
 
 // HELPER FUNCTIONS
 
@@ -367,7 +356,7 @@ const buildClassificationConfidenceRichText = (classifiers) => {
  * @param {Map<String, Object>} totals - A Map of database to totals.
  * @returns {String} Rich text value
  */
-let buildClassificationReportRichText = (classifiers, totals) => {
+const buildClassificationReportRichText = (classifiers, totals) => {
 	let richText =
 		'<div><div><table style=width: 100%;><thead><tr><th>CLASSIFIER</th><th>% OF COLUMNS OF TOTAL CLASSIFIED COLUMNS</th><th># OF COLUMNS</th></tr></thead><tbody>';
 
@@ -386,7 +375,6 @@ let buildClassificationReportRichText = (classifiers, totals) => {
  * @param {Number} page_number Page Number
  * @returns JS Array
  */
-let paginate = (array, page_size, page_number) => {
+export const paginate = (array, page_size, page_number) => {
 	return array.slice((page_number - 1) * page_size, page_number * page_size);
 };
-exports.paginate = paginate;
