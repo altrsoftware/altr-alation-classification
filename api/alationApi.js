@@ -113,8 +113,8 @@ const getColumns = async (databaseId, schemaId, tableName, columnName) => {
 		);
 		return response.data;
 	} catch (error) {
+		console.error('GET column error');
 		if (error.response) {
-			console.error('GET column error');
 			console.error(error.response.data);
 			console.error(error.response.status);
 		}
@@ -135,8 +135,8 @@ const updateMultipleCustomFieldValues = async (updateObjects) => {
 		const response = await alationAxios.put(`/v2/custom_field_value/`, updateObjects);
 		return response.data;
 	} catch (error) {
+		console.error('PUT multiple custom field values error');
 		if (error.response) {
-			console.error('PUT multiple custom field values error');
 			console.error(error.response.data);
 			console.error(error.response.status);
 		}

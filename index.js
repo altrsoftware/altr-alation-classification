@@ -96,19 +96,19 @@ let main = async () => {
 
 		// What: Make API calls to Alation to update custom fields for each classified database and classified column
 		let promises = [
-			alation.updateMultipleCustomFieldValues(classificationMultiPickerUpdateObjects).then((value) => {
-				return { field: 'Classifications', value: value };
+			alation.updateMultipleCustomFieldValues(classificationMultiPickerUpdateObjects).then((response) => {
+				return { field: 'Classifications', result: response };
 			}),
-			alation.updateMultipleCustomFieldValues(classificationConfidenceRichTextUpdateObjects).then((value) => {
-				return { field: 'Confidence', value: value };
+			alation.updateMultipleCustomFieldValues(classificationConfidenceRichTextUpdateObjects).then((response) => {
+				return { field: 'Confidence', result: response };
 			}),
-			alation.updateMultipleCustomFieldValues(classificationReportRichTextUpdateObjects).then((value) => {
-				return { field: 'Report', value: value };
+			alation.updateMultipleCustomFieldValues(classificationReportRichTextUpdateObjects).then((response) => {
+				return { field: 'Report', result: response };
 			}),
 		];
-		let response = await Promise.allSettled(promises);
+		let responses = await Promise.allSettled(promises);
 
-		console.dir(response, { depth: null });
+		console.dir(responses, { depth: null });
 	} catch (error) {
 		if (!error.response) console.error(error);
 		return;

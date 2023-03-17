@@ -208,6 +208,7 @@ exports.getAlationSchemas = getAlationSchemas;
  */
 const getAlationColumns = async (columnToClassifierMap, alationSchemasMap) => {
 	let promises = [];
+	console.time(`Get Alation Columns`);
 	for (const [key, value] of columnToClassifierMap) {
 		let columnHashIdArray = key.split(`.`);
 		let lookup = `${columnHashIdArray[0]}.${columnHashIdArray[1]}`.toUpperCase();
@@ -217,16 +218,41 @@ const getAlationColumns = async (columnToClassifierMap, alationSchemasMap) => {
 		let tableName = `${columnHashIdArray[0]}.${columnHashIdArray[1]}.${columnHashIdArray[2]}`.toLowerCase();
 		let columnName = columnHashIdArray[3];
 
-		promises.push(
-			alation.getColumns(databaseId, schemaId, tableName, columnName).then((columns) => {
-				let column = columns[0];
-				column.classifiers = value;
-				return column;
-			})
-		);
-	}
+		// PROMISE ALL
+		// promises.push(
+		// 	alation.getColumns(databaseId, schemaId, tableName, columnName).then((columns) => {
+		// 		let column = columns[0];
+		// 		column.classifiers = value;
+		// 		return column;
+		// 	})
+		// );
 
-	return await Promise.allSettled(promises).then((columns) => columns.map((column) => column.value));
+		// Get column, filter Snowflake Native Classification prefixes for column's classifiers
+		// and array of classifiers to column object
+		let response = await alation.getColumns(databaseId, schemaId, tableName, columnName).then((result) => {
+			let column = result[0];
+			column.classifiers = value.map((classifier) => {
+				if (classifier.includes(`SEMANTIC_CATEGORY:`)) {
+					return classifier.replace(`SEMANTIC_CATEGORY:`, ``);
+				} else if (classifier.includes(`PRIVACY_CATEGORY:`)) {
+					return classifier.replace(`PRIVACY_CATEGORY:`, ``);
+				}
+
+				return classifier;
+			});
+			return column;
+		});
+
+		promises.push(response);
+	}
+	console.timeEnd(`Get Alation Columns`);
+
+	// PROMISE ALL
+	// let response = await Promise.allSettled(promises).then((columns) => columns.map((column) => column.value));
+	// console.log(response);
+	// return response;
+
+	return promises;
 };
 exports.getAlationColumns = getAlationColumns;
 
@@ -289,10 +315,18 @@ const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationDatabase
 	let customFieldId = customField[0].id;
 
 	return alationDatabases.map((database) => {
-		let richText = buildClassificationReportRichText(
-			classifiers.get(database.dbname.toUpperCase()).sort((a, b) => b.Amount - a.Amount),
-			totals.get(database.dbname.toUpperCase())
-		);
+		// Filter classifier type values if they include Snowflake Native Classification prefixes
+		let currentClassifiers = classifiers.get(database.dbname.toUpperCase()).sort((a, b) => b.Amount - a.Amount);
+		currentClassifiers = currentClassifiers.map((classifier) => {
+			if (classifier.Type.includes(`SEMANTIC_CATEGORY:`)) {
+				classifier.Type = classifier.Type.replace(`SEMANTIC_CATEGORY:`, ``);
+			} else if (classifier.Type.includes(`PRIVACY_CATEGORY:`)) {
+				classifier.Type = classifier.Type.replace(`PRIVACY_CATEGORY:`, ``);
+			}
+			return classifier;
+		});
+
+		let richText = buildClassificationReportRichText(currentClassifiers, totals.get(database.dbname.toUpperCase()));
 
 		return {
 			value: richText,
@@ -320,7 +354,7 @@ const buildClassificationConfidenceRichText = (classifiers) => {
 		let classifierConfidence = classifier.split(':');
 		richText += `<tr><td>${classifierConfidence[0]}</td><td >${classifierConfidence[1]}</td></tr>`;
 	}
-	richText += `</tbody></table><p><br></p><p><em>This report is imported from ALTR.</em></p><p><em>It describes classifiers of the column and the confidence score for each classifier.</em></p><p><em>Possible scores are: VERY LIKELY, LIKELY, POSSIBLE</em></p></div></div>`;
+	richText += `</tbody></table><p><br></p><p><em>This report is imported from ALTR.</em></p><p><em>It describes classifiers of the column and the confidence score for each classifier.</em></p><p><em>Possible scores are: VERY LIKELY, LIKELY, POSSIBLE, NA (Not Applicable)</em></p></div></div>`;
 
 	return richText;
 };

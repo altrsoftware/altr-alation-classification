@@ -65,8 +65,8 @@ let getClassifiersOfDatabase = async (databaseId) => {
 		const response = await altrAxios.get(`/classification/classifiers/${databaseId}`);
 		return response.data.data;
 	} catch (error) {
+		console.error('GET classifiers of database error');
 		if (error.response) {
-			console.error('GET classifiers of database error');
 			console.error(error.response.data);
 			console.error(error.response.status);
 		}
@@ -88,8 +88,8 @@ let getColumnsOfClassifier = async (classifier, offset) => {
 		const response = await altrAxios.get(`/classification/columns/${classifier}?offset=${offset}&limit=50`);
 		return response.data.data;
 	} catch (error) {
+		console.error('GET columns of classifier error');
 		if (error.response) {
-			console.error('GET columns of classifier error');
 			console.error(error.response.data);
 			console.error(error.response.status);
 		}
