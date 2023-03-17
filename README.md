@@ -11,9 +11,9 @@
 
 ![Node workflow](https://github.com/altrsoftware/altr-alation-classification/actions/workflows/node.js.yml/badge.svg)    ![CodeQl workflow](https://github.com/altrsoftware/altr-alation-classification/actions/workflows/codeql.yml/badge.svg)
 
-The ALTR + Alation Classification tool is used to pass classification data of a database in ALTR into Alation.
+The ALTR + Alation Classification tool is used to pass classification data from ALTR to Alation.
 
-This tool is plumbing between to available API's.
+This tool is plumbing between two available APIs.
 * [ALTR Management  API](https://altrnet.live.altr.com/api/swagger/)
 * [Alation API](https://developer.alation.com/dev/reference/refresh-access-token-overview)
 
@@ -45,7 +45,7 @@ The tool:
 
 ## Why use it
 
-<a  href="https://www.altr.com/">ALTR</a> partnered with <a  href="https://www.alation.com/">Alation</a> to fill a gap between data cataloging and data governance. With ALTR's powerful classification capability, you can use this tool to automatically pass classification results from ALTR in to Alation. This allows catalog admins in Alation to quickly and easily see how data is classified and make decisions based on those results.
+<a  href="https://www.altr.com/">ALTR</a> partnered with <a  href="https://www.alation.com/">Alation</a> to fill a gap between data cataloging and data governance. With ALTR's powerful classification capability, you can use this tool to automatically pass classification results from ALTR into Alation. This allows catalog admins in Alation to quickly and easily see how data is classified and make decisions based on those results.
 
   
   
@@ -60,15 +60,15 @@ Integration Flowchart:
 
   
 
-Alation datasource page BEFORE running the application:
+Alation data source page BEFORE running the application:
 
 <img  src="./imgs/datasource-before.png"  alt="Alation Column before running the application"  height="300">
 
-  
 
-Alation datasource page AFTER running the application:
+Alation data source page AFTER running the application:
 
 <img  src="./imgs/datasource-after.png"  alt="Alation Column after running the application"  height="300">
+
 
 Alation column page BEFORE running the application:
 
@@ -100,7 +100,7 @@ Alation column page AFTER running the application:
 
 ## Before using the tool
 
-**1. You must add a custom fields to your Alation environment for this application to work successfully**
+**1. You **must add **custom fields** to your** Alation environment for this application to work successfully**
 
 	$ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
 
@@ -134,7 +134,7 @@ Alation column page AFTER running the application:
 	ALTR_KEY_NAME = "Your ALTR API key name"
 	ALTR_KEY_PASSWORD = "Your ALTR API key password"
 
-Alation API Access Token information found here. https://developer.alation.com/dev/docs/authentication-into-alation-apis
+Alation API Access Token information is found here. https://developer.alation.com/dev/docs/authentication-into-alation-apis
   
 
 ## How To Use
@@ -162,23 +162,21 @@ This method will install the necessary packages needed to run the application fo
 
 ## Dependencies
 
-This application was built using the following node packages and their respected version:
+This application was built using the following npm packages:
 
-* [axios](https://www.npmjs.com/package/axios/v/0.27.2) : 0.27.2
+* [axios](https://www.npmjs.com/package/axios/v/0.27.2)
 
-* [axios-cookiejar-support](https://www.npmjs.com/package/axios-cookiejar-support/v/4.0.3) : 4.0.3
+* [axios-cookiejar-support](https://www.npmjs.com/package/axios-cookiejar-support/v/4.0.3)
 
-* [axios-mock-adapter](https://www.npmjs.com/package/axios-mock-adapter/v/1.21.2) : 1.21.2
+* [axios-mock-adapter](https://www.npmjs.com/package/axios-mock-adapter/v/1.21.2)
 
-* [dotenv](https://www.npmjs.com/package/dotenv/v/16.0.3) : 16.0.3
+* [dotenv](https://www.npmjs.com/package/dotenv/v/16.0.3)
 
-* [jest](https://www.npmjs.com/package/jest/v/29.2.2) : 29.2.2
-  
-* [node](https://nodejs.org/download/release/v16.0.0/) : 0.27.2
+* [jest](https://www.npmjs.com/package/jest/v/29.2.2)
 
-* [tough-cookie](https://www.npmjs.com/package/tough-cookie/v/4.1.2) : 4.1.2
+* [tough-cookie](https://www.npmjs.com/package/tough-cookie/v/4.1.2)
 
-* [yargs](https://www.npmjs.com/package/yargs/v/17.6.2) : 17.6.2
+* [yargs](https://www.npmjs.com/package/yargs/v/17.6.2)
 
   
 
@@ -199,6 +197,6 @@ Email *application-engineers@altr.com* with a subject line of "Alation Classific
 ## Additional Resources
 https://docs.altr.com/
 
-https://www.youtube.com/channel/UCcqDY0wrRlQ8hQ_mjJNfkAA
+https://www.youtube.com/@altrsoftware
 
 https://www.altr.com/resources
