@@ -115,7 +115,9 @@ export const getUniqueClassifierNames = (classifiers) => {
  */
 export const getColumnsOfClassifiers = async (classifiers, altrClassifiedDatabases) => {
 	// Get all classified columns for each classifier
+	// This code will be refactored to be faster once ALTR API changes for this endpoint are completed
 	let allClassifiedColumns = [];
+	console.time(`Get ALTR Columns`);
 	for (const classifier of classifiers) {
 		let offset = 0;
 		let moreColumns = true;
@@ -135,6 +137,7 @@ export const getColumnsOfClassifiers = async (classifiers, altrClassifiedDatabas
 		}
 		allClassifiedColumns = allClassifiedColumns.concat(currentColumns);
 	}
+	console.timeEnd(`Get ALTR Columns`);
 
 	// Filter out columns that are not in operating databases
 	let databaseIds = altrClassifiedDatabases.map((database) => database.dbid);
@@ -173,11 +176,12 @@ export const getColumnsOfClassifiers = async (classifiers, altrClassifiedDatabas
  */
 export const getAlationSchemas = async (alationDatabases) => {
 	// Get all schemas in Alation for specified `alationDatabases`
-	let alationSchemas = [];
+	console.time(`Get Alation Schemas`);
 	const promises = alationDatabases.map((database) => {
 		return alation.getSchemas(database.id);
 	});
 	const results = await Promise.all(promises).then((result) => result.flat(1));
+	console.timeEnd(`Get Alation Schemas`);
 
 	// Map schema hash ID to schema object
 	let alationSchemaMap = new Map();
