@@ -1,5 +1,8 @@
 import * as alation from './api/alationApi.js';
 import * as altr from './api/altrApi.js';
+import pThrottle from 'p-throttle';
+
+const throttle = pThrottle({ limit: 20, interval: 1000 });
 
 /**
  * Gets necessary Alation custom fields for scripts operations.
@@ -211,41 +214,33 @@ export const getAlationColumns = async (columnToClassifierMap, alationSchemasMap
 		let tableName = `${columnHashIdArray[0]}.${columnHashIdArray[1]}.${columnHashIdArray[2]}`.toLowerCase();
 		let columnName = columnHashIdArray[3];
 
-		// PROMISE ALL
-		// promises.push(
-		// 	alation.getColumns(databaseId, schemaId, tableName, columnName).then((columns) => {
-		// 		let column = columns[0];
-		// 		column.classifiers = value;
-		// 		return column;
-		// 	})
-		// );
+		// Use throttle() to wrap the API call promise
+		let throttledFunction = throttle(() =>
+			alation.getColumns(databaseId, schemaId, tableName, columnName).then((columns) => {
+				let column = columns[0];
+				// Add classifiers array to column object. Remove Snowflake Classification prefix if exits.
+				column.classifiers = value.map((classifier) => {
+					if (classifier.includes(`SEMANTIC_CATEGORY:`)) {
+						return classifier.replace(`SEMANTIC_CATEGORY:`, ``);
+					} else if (classifier.includes(`PRIVACY_CATEGORY:`)) {
+						return classifier.replace(`PRIVACY_CATEGORY:`, ``);
+					}
 
-		// Get column, filter Snowflake Native Classification prefixes for column's classifiers
-		// and array of classifiers to column object
-		let response = await alation.getColumns(databaseId, schemaId, tableName, columnName).then((result) => {
-			let column = result[0];
-			column.classifiers = value.map((classifier) => {
-				if (classifier.includes(`SEMANTIC_CATEGORY:`)) {
-					return classifier.replace(`SEMANTIC_CATEGORY:`, ``);
-				} else if (classifier.includes(`PRIVACY_CATEGORY:`)) {
-					return classifier.replace(`PRIVACY_CATEGORY:`, ``);
-				}
+					return classifier;
+				});
+				return column;
+			})
+		);
+		let throttledPromise = throttledFunction();
 
-				return classifier;
-			});
-			return column;
-		});
-
-		promises.push(response);
+		// Push the throttled promise to the array
+		promises.push(throttledPromise);
 	}
+
+	// Use Promise.allSettled() to wait for all promises to settle
+	const response = await Promise.all(promises);
 	console.timeEnd(`Get Alation Columns`);
-
-	// PROMISE ALL
-	// let response = await Promise.allSettled(promises).then((columns) => columns.map((column) => column.value));
-	// console.log(response);
-	// return response;
-
-	return promises;
+	return response;
 };
 
 /**

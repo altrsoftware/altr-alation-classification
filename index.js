@@ -9,7 +9,7 @@ let main = async () => {
 	let alationPermissions = await alation.getUsers();
 	let altrPermissions = await altr.getAdministrators();
 	if (!alationPermissions || !altrPermissions) {
-		console.error(`Permissions failed. Please check environment variables and try again.`);
+		console.error(`Permissions failed. Please check environment variables and try again.\n`);
 		return;
 	}
 	console.log(`Permissions check passed\n`);
@@ -18,7 +18,7 @@ let main = async () => {
 		// Get custom fields in Alation that will be updated with this script.
 		let [altrClassifications, altrClassificationConfidence, altrClassificationReport] =
 			await utils.getAllCustomFields();
-		console.log(`Necessary custom fields exists and are in correct state for operations.\n`);
+		console.log(`Necessary custom fields exists and are in correct state for operations.`);
 
 		// Get list of databases in ALTR that have been classified.
 		let altrClassifiedDatabases = await altr.getClassifiedDatabases();
