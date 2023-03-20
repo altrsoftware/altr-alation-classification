@@ -1,8 +1,14 @@
 import * as alation from './api/alationApi.js';
 import * as altr from './api/altrApi.js';
 import pThrottle from 'p-throttle';
+import 'dotenv-defaults/config.js';
 
-const throttle = pThrottle({ limit: 20, interval: 1000 });
+// Setup throttle limit and interval
+// To change these defaults, copy these environment variables to .env and change the values
+const throttle = pThrottle({
+	limit: parseInt(process.env.THROTTLE_LIMIT),
+	interval: parseInt(process.env.THROTTLE_INTERVAL_MILLISECONDS),
+});
 
 /**
  * Gets necessary Alation custom fields for scripts operations.

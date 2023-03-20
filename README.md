@@ -38,7 +38,7 @@ The tool:
 
 5. updates *ALTR Classification* & *ALTR Classification Confidence* (Custom Fields) with classifier(s) of each column
 
-6. updates *ALTR Classification Report* (Custom Field) in the Alation datasource page with a ALTR classification report overview
+6. updates *ALTR Classification Report* (Custom Field) in the Alation data source page with an ALTR classification report overview
 
   
   
@@ -134,6 +134,13 @@ Alation column page AFTER running the application:
 	ALTR_KEY_NAME = "Your ALTR API key name"
 	ALTR_KEY_PASSWORD = "Your ALTR API key password"
 
+The following environment variables are found in `.env.defaults`. To change these values add the variables to `.env` with the values you want.
+These variables are used to throttle API calls if you have API thresholds in Alation.
+
+	THROTTLE_LIMIT = 20
+	THROTTLE_INTERVAL_MILLISECONDS = 1000
+
+
 Alation API Access Token information is found here. https://developer.alation.com/dev/docs/authentication-into-alation-apis
   
 
@@ -170,9 +177,11 @@ This application was built using the following npm packages:
 
 * [axios-mock-adapter](https://www.npmjs.com/package/axios-mock-adapter/v/1.21.2)
 
-* [dotenv](https://www.npmjs.com/package/dotenv/v/16.0.3)
+* [dotenv-defaults](https://www.npmjs.com/package/dotenv-defaults)
 
 * [jest](https://www.npmjs.com/package/jest/v/29.2.2)
+
+* [p-throttle](https://www.npmjs.com/package/p-throttle)
 
 * [tough-cookie](https://www.npmjs.com/package/tough-cookie/v/4.1.2)
 

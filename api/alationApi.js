@@ -1,5 +1,4 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv-defaults/config.js';
 import axios from 'axios';
 
 const alationAxios = axios.create({
