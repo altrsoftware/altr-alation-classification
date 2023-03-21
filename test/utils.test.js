@@ -247,6 +247,48 @@ describe('getColumnsOfClassifiers()', () => {
 	});
 
 	it('filters out columns that are not in operating databases', async () => {
+		let mockAltr = jest.spyOn(altr, 'getColumnsOfClassifier');
+		mockAltr.mockResolvedValueOnce([
+			{
+				clientDatabaseID: 1,
+				database: 'COMPANY_DB',
+				schema: 'PUBLIC',
+				table: 'EMPLOYEES',
+				column: 'EMAIL',
+				classifier: ['EMAIL_ADDRESS'],
+				confidence: 'LIKELY',
+				fullyQualifiedTableName: 'PUBLIC.EMPLOYEES',
+				alsoAppearsAs: ['EMAILS', 'FIRST_NAME'],
+			},
+		]);
+
+		mockAltr.mockResolvedValueOnce([
+			{
+				clientDatabaseID: 1,
+				database: 'COMPANY_DB',
+				schema: 'PUBLIC',
+				table: 'EMPLOYEES',
+				column: 'EMAIL',
+				classifier: ['FIRST_NAME'],
+				confidence: 'LIKELY',
+				fullyQualifiedTableName: 'PUBLIC.EMPLOYEES',
+				alsoAppearsAs: ['EMAILS', 'EMAIL_ADDRESS'],
+			},
+		]);
+
+		mockAltr.mockResolvedValueOnce([
+			{
+				clientDatabaseID: 1,
+				database: 'COMPANY_DB',
+				schema: 'PUBLIC',
+				table: 'EMPLOYEES',
+				column: 'EMAIL',
+				classifier: ['EMAILS'],
+				confidence: 'LIKELY',
+				fullyQualifiedTableName: 'PUBLIC.EMPLOYEES',
+				alsoAppearsAs: ['FIRST_NAME', 'EMAIL_ADDRESS'],
+			},
+		]);
 		const classifiers = ['EMAIL_ADDRESS'];
 		const altrClassifiedDatabases = [{ dbid: 5, dbname: 'db1' }];
 		const expectedColumnsMap = new Map([]);
