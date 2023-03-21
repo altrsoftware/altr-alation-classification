@@ -1,5 +1,4 @@
 import 'dotenv-defaults/config.js';
-import MockAdapter from 'axios-mock-adapter';
 import * as altr from '../api/altrApi.js';
 import * as alation from '../api/alationApi.js';
 import * as utils from '../utils.js';
