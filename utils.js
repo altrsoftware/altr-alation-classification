@@ -59,7 +59,7 @@ export const getMatchingDatabases = (databasesOne, databasesTwo) => {
  * @returns {String[]} An array of database names.
  */
 export const getDatabaseNames = (databases) => {
-	return databases.map((database) => database.dbname);
+	return databases?.map((database) => database.dbname);
 };
 
 /**
@@ -257,11 +257,11 @@ export const getAlationColumns = async (columnToClassifierMap, alationSchemasMap
  * Builds an array of update objects for a multi-picker custom field that based on the provided columns..
  *
  * @param {Object[]} columns - An array of columns.
- * @param {Object[]} customField - An array of contains custom fields.
+ * @param {Object[]} customField - An array of custom fields.
  * @returns {Objects[]} An array of custom field update objects containing an update object for each column.
  */
 export const buildColumnMultiPickerUpdateObjects = (columns, customField) => {
-	let customFieldId = customField[0].id;
+	let customFieldId = customField[0]?.id;
 	return columns.map((column) => {
 		let classifierArray = column.classifiers.map((classifier) => classifier.split(`:`)[0]);
 
@@ -279,11 +279,11 @@ export const buildColumnMultiPickerUpdateObjects = (columns, customField) => {
  * Builds an array of update objects for a rich-text custom field that based on the provided columns.
  *
  * @param {Object[]} columns - An array of columns.
- * @param {Object[]} customField - An array of contains custom fields.
+ * @param {Object[]} customField - An array of custom fields.
  * @returns {Objects[]} An array of custom field update objects containing an update object for each column.
  */
 export const buildColumnRichTextUpdateObjects = (columns, customField) => {
-	let customFieldId = customField[0].id;
+	let customFieldId = customField[0]?.id;
 
 	return columns.map((column) => {
 		let richText = buildClassificationConfidenceRichText(column.classifiers);
@@ -303,11 +303,11 @@ export const buildColumnRichTextUpdateObjects = (columns, customField) => {
  * @param {Map<String, Object[]>} classifiers A Map of database to classifiers.
  * @param {Map<String, Object>} totals - A Map of database to totals.
  * @param {Object[]} alationDatabases - An array of database objects.
- * @param {Object[]} customField - An array of contains custom fields.
+ * @param {Object[]} customField - An array of custom fields.
  * @returns {Object[]} An array of custom field update objects containing an update object for each column.m
  */
 export const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationDatabases, customField) => {
-	let customFieldId = customField[0].id;
+	let customFieldId = customField[0]?.id;
 
 	return alationDatabases.map((database) => {
 		// Filter classifier type values if they include Snowflake Native Classification prefixes
@@ -339,10 +339,10 @@ export const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationD
  * Builds rich text value to update ALTR Classification Confidence custom field in Alation.
  * This value is HTML code and contains a table.
  *
- * @param {Map<String, String[]>} classifiers - A Map of database to classifiers.
+ * @param {String[]} classifiers - Array of classifiers.
  * @returns {String} Rich text value
  */
-const buildClassificationConfidenceRichText = (classifiers) => {
+export const buildClassificationConfidenceRichText = (classifiers) => {
 	let richText = `<div><div><table><thead><tr><th>CLASSIFIER</th><th>CONFIDENCE SCORE</th></tr></thead><tbody>`;
 	for (const classifier of classifiers) {
 		let classifierConfidence = classifier.split(':');
@@ -357,11 +357,11 @@ const buildClassificationConfidenceRichText = (classifiers) => {
  * Builds rich text value to update ALTR Classification Report custom field in Alation.
  * This value is HTML code and contains a table.
  *
- * @param {Map<String, String[]>} classifiers - A map of database to classifiers.
- * @param {Map<String, Object>} totals - A Map of database to totals.
+ * @param {String[]} classifiers - An array of classifiers.
+ * @param {Object} totals - An object of totals.
  * @returns {String} Rich text value
  */
-const buildClassificationReportRichText = (classifiers, totals) => {
+export const buildClassificationReportRichText = (classifiers, totals) => {
 	let richText =
 		'<div><div><table style=width: 100%;><thead><tr><th>CLASSIFIER</th><th>% OF COLUMNS OF TOTAL CLASSIFIED COLUMNS</th><th># OF COLUMNS</th></tr></thead><tbody>';
 
