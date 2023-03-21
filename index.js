@@ -18,7 +18,7 @@ let main = async () => {
 		// Get custom fields in Alation that will be updated with this script.
 		let [altrClassifications, altrClassificationConfidence, altrClassificationReport] =
 			await utils.getAllCustomFields();
-		console.log(`Necessary custom fields exists and are in correct state for operations.`);
+		console.log(`Necessary custom fields exist and are in the correct state for operations.`);
 
 		// Get list of databases in ALTR that have been classified.
 		let altrClassifiedDatabases = await altr.getClassifiedDatabases();

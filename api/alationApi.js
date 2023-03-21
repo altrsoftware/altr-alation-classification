@@ -1,7 +1,7 @@
 import 'dotenv-defaults/config.js';
 import axios from 'axios';
 
-const alationAxios = axios.create({
+export const alationAxios = axios.create({
 	baseURL: encodeURI(`https://${process.env.ALATION_DOMAIN}/integration`),
 	headers: {
 		TOKEN: process.env.ALATION_API_ACCESS_TOKEN,

@@ -4,7 +4,7 @@ import axios from 'axios';
 // Builds base64 encoded string for ALTR API Auth
 const ALTR_AUTH = Buffer.from(`${process.env.ALTR_KEY_NAME}:${process.env.ALTR_KEY_PASSWORD}`).toString('base64');
 
-const altrAxios = axios.create({
+export const altrAxios = axios.create({
 	headers: {
 		Authorization: `Basic ${ALTR_AUTH}`,
 	},
