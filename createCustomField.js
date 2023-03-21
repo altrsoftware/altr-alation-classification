@@ -1,8 +1,8 @@
-const { default: axios } = require('axios');
-const { CookieJar } = require('tough-cookie');
-const { wrapper } = require('axios-cookiejar-support');
-const querystring = require('querystring');
-const args = require('yargs').argv;
+import axios from 'axios';
+import { wrapper } from 'axios-cookiejar-support';
+import { CookieJar } from 'tough-cookie';
+import { stringify } from 'querystring';
+import { args } from 'yargs';
 
 const jar = new CookieJar();
 const client = wrapper(axios.create({ jar }));
@@ -15,24 +15,27 @@ let login = async (domain, account, password) => {
 		console.log(jar.toJSON());
 
 		const postLoginOptions = {
-			headers: { 'Referer': url },
-		}
+			headers: { Referer: url },
+		};
 
-		const data = querystring.stringify({ 'csrfmiddlewaretoken': jar.toJSON().cookies[0].value, 'ldap_user': account, 'password': password })
+		const data = stringify({
+			csrfmiddlewaretoken: jar.toJSON().cookies[0].value,
+			ldap_user: account,
+			password: password,
+		});
 
 		await client.post(url, data, postLoginOptions);
 		console.log(jar.toJSON());
 
 		await client.get(`https://${domain}/`);
 		console.log(jar.toJSON());
-
 	} catch (error) {
 		throw error;
 	}
-}
+};
 
 let buildOptions = (countries) => {
-	let options = '['
+	let options = '[';
 	if (countries == null || countries.length == 0) {
 		for (const classifier of globalClassifications) {
 			options += `{"title":"${classifier}", "tooltip_text":"", "old_index":null},`;
@@ -43,65 +46,84 @@ let buildOptions = (countries) => {
 	return options;
 };
 
-
 let main = async () => {
 	try {
 		if (!args.domain || !args.account || !args.password) {
-			throw Error('Missing environment variables: $ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>');
+			throw Error(
+				'Missing environment variables: $ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>'
+			);
 		}
 		let domain = args.domain;
 		await login(domain, args.account, args.password);
 
 		let altrClassification = {
-			"field_type": "MULTI_PICKER",
-			"name": "ALTR Classification",
-			"name_plural": "ALTR Classifications",
-			"name_singular": "ALTR Classification",
-			"backref_name": "null",
-			"backref_tooltip_text": "null",
-			"allow_multiple": "true",
-			"allowed_otypes": [],
-			"options": buildOptions(),
-			"builtin_name": "null",
-			"universal_field": "false",
-			"flavor": "DEFAULT",
-			"tooltip_text": "Classification from ALTR"
+			field_type: 'MULTI_PICKER',
+			name: 'ALTR Classification',
+			name_plural: 'ALTR Classifications',
+			name_singular: 'ALTR Classification',
+			backref_name: 'null',
+			backref_tooltip_text: 'null',
+			allow_multiple: 'true',
+			allowed_otypes: [],
+			options: buildOptions(),
+			builtin_name: 'null',
+			universal_field: 'false',
+			flavor: 'DEFAULT',
+			tooltip_text: 'Classification from ALTR',
 		};
 
 		let altrClassificationReport = {
-			"field_type": "RICH_TEXT",
-			"name": "ALTR Classification Report",
-			"name_singular": "ALTR Classification Report",
-			"backref_name": "null",
-			"backref_tooltip_text": "null",
-			"allowed_otypes": [],
-			"builtin_name": "null",
-			"universal_field": "false",
-			"flavor": "DEFAULT",
-			"tooltip_text": "Classification report overview from ALTR"
+			field_type: 'RICH_TEXT',
+			name: 'ALTR Classification Report',
+			name_singular: 'ALTR Classification Report',
+			backref_name: 'null',
+			backref_tooltip_text: 'null',
+			allowed_otypes: [],
+			builtin_name: 'null',
+			universal_field: 'false',
+			flavor: 'DEFAULT',
+			tooltip_text: 'Classification report overview from ALTR',
 		};
 
 		let altrClassificationConfidence = {
-			"field_type": "RICH_TEXT",
-			"name": "ALTR Classification Confidence",
-			"name_singular": "ALTR Classification Confidence",
-			"backref_name": "null",
-			"backref_tooltip_text": "null",
-			"allowed_otypes": [],
-			"builtin_name": "null",
-			"universal_field": "false",
-			"flavor": "DEFAULT",
-			"tooltip_text": "Classification confidence scores from ALTR"
+			field_type: 'RICH_TEXT',
+			name: 'ALTR Classification Confidence',
+			name_singular: 'ALTR Classification Confidence',
+			backref_name: 'null',
+			backref_tooltip_text: 'null',
+			allowed_otypes: [],
+			builtin_name: 'null',
+			universal_field: 'false',
+			flavor: 'DEFAULT',
+			tooltip_text: 'Classification confidence scores from ALTR',
 		};
 
-		let postCustomFieldOptions = { headers: { 'X-CSRFToken': jar.toJSON().cookies[0].value, 'Cookie': `csrftoken=${jar.toJSON().cookies[0].value}; sessionid=${jar.toJSON().cookies[1].value}`, 'Referer': `https://${domain}/login/` } };
-		let response = await client.post(`https://${domain}/ajax/custom_field/`, altrClassification, postCustomFieldOptions);
+		let postCustomFieldOptions = {
+			headers: {
+				'X-CSRFToken': jar.toJSON().cookies[0].value,
+				Cookie: `csrftoken=${jar.toJSON().cookies[0].value}; sessionid=${jar.toJSON().cookies[1].value}`,
+				Referer: `https://${domain}/login/`,
+			},
+		};
+		let response = await client.post(
+			`https://${domain}/ajax/custom_field/`,
+			altrClassification,
+			postCustomFieldOptions
+		);
 		console.log(response.data);
 
-		response = await client.post(`https://${domain}/ajax/custom_field/`, altrClassificationReport, postCustomFieldOptions);
+		response = await client.post(
+			`https://${domain}/ajax/custom_field/`,
+			altrClassificationReport,
+			postCustomFieldOptions
+		);
 		console.log(response.data);
 
-		response = await client.post(`https://${domain}/ajax/custom_field/`, altrClassificationConfidence, postCustomFieldOptions);
+		response = await client.post(
+			`https://${domain}/ajax/custom_field/`,
+			altrClassificationConfidence,
+			postCustomFieldOptions
+		);
 		console.log(response.data);
 	} catch (error) {
 		console.log(error);
@@ -109,7 +131,7 @@ let main = async () => {
 	}
 
 	console.log('\nCUSTOM FIELDS CREATED!');
-}
+};
 
 main();
 
@@ -177,5 +199,33 @@ let globalClassifications = [
 	'US_STATE',
 	'US_TOLLFREE_PHONE_NUMBER',
 	'US_VEHICLE_IDENTIFICATION_NUMBER',
-	'UK_NATIONAL_HEALTH_SERVICE_NUMBER'
+	'UK_NATIONAL_HEALTH_SERVICE_NUMBER',
+	'CANADA_QUEBEC_HIN',
+	'INDIA_AADHAAR_INDIVIDUAL',
+	'IDENTIFIER',
+	'QUASI_IDENTIFIER',
+	'SENSITIVE',
+	'EMAIL',
+	'IBAN',
+	'IMEI',
+	'VIN',
+	'NAME',
+	'PAYMENT_CARD',
+	'US_BANK_ACCOUNT',
+	'US_DRIVERS_LICENSE',
+	'US_SSN',
+	'US_STREET_ADDRESS',
+	'ETHNICITY',
+	'LATITUDE',
+	'LAT_LONG',
+	'LONGITUDE',
+	'MARITAL_STATUS',
+	'OCCUPATION',
+	'US_POSTAL_CODE',
+	'US_STATE_OR_TERRITORY',
+	'US_COUNTY',
+	'US_CITY',
+	'YEAR_OF_BIRTH',
+	'SALARY',
+	'COUNTRY',
 ];

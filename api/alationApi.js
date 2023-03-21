@@ -1,173 +1,22 @@
-const axios = require('axios').default;
+import 'dotenv-defaults/config.js';
+import axios from 'axios';
+
+export const alationAxios = axios.create({
+	baseURL: encodeURI(`https://${process.env.ALATION_DOMAIN}/integration`),
+	headers: {
+		TOKEN: process.env.ALATION_API_ACCESS_TOKEN,
+	},
+});
 
 /**
- * Updates custom field, "Classification Matches", with classifiers
- * @param {String} alationDomain The domain of your Alation organization
- * @param {String} alationApiAccessToken The Alation API Access Token (short-term) 
- * @param {Array} objects The objects that contain data to update custom field
- * @returns JS Object
+ * Gets users in Alation.
+ *
+ * @async
+ * @returns {Promise<Boolean>} True || False
  */
-let putMultipleCustomFieldValues = async (alationDomain, alationApiAccessToken, objects) => {
-	const options = {
-		method: 'PUT',
-		url: encodeURI(`https://${alationDomain}/integration/v2/custom_field_value/`),
-		headers: { accept: 'application/json', 'content-type': 'application/json', TOKEN: alationApiAccessToken },
-		data: objects
-	};
-
+export const getUsers = async () => {
 	try {
-		const response = await axios.request(options);
-		return response.data;
-	} catch (error) {
-		if (error.response) {
-			console.error('PUT multiple custom field values error');
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-};
-exports.putMultipleCustomFieldValues = putMultipleCustomFieldValues;
-
-/**
- * Gets custom fields
- * @param {String} alationDomain The domain of your Alation organization 
- * @param {String} alationApiAccessToken The Alation API Access Token (short-term) 
- * @param {String} field_type The custom field type
- * @param {String} name_plural The custom field name
- * @returns JS Array of Objects
- */
-let getMultipleCustomFields = async (alationDomain, alationApiAccessToken, field_type, name_plural, name_singular) => {
-	let options;
-	if (name_plural == null) {
-		options = {
-			method: 'GET',
-			url: encodeURI(`https://${alationDomain}/integration/v2/custom_field/?field_type=${field_type}&name_singular=${name_singular}`),
-			headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
-		};
-	} else {
-		options = {
-			method: 'GET',
-			url: encodeURI(`https://${alationDomain}/integration/v2/custom_field/?field_type=${field_type}&name_plural=${name_plural}`),
-			headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
-		};
-	}
-
-	try {
-		let response = await axios.request(options);
-		return response.data;
-	} catch (error) {
-		console.error('GET multiple custom fields error');
-		if (error.response) {
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-}
-exports.getMultipleCustomFields = getMultipleCustomFields;
-
-/**
- * Gets array of available schemas in Alation 
- * @param {String} alationDomain The domain of your Alation organization 
- * @param {String} alationApiAccessToken The Alation API Access Token (short-term) 
- * @returns JS Array of Objects
- */
-let getDatabases = async (alationDomain, alationApiAccessToken) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${alationDomain}/integration/v1/datasource/?include_undeployed=false&include_hidden=true`),
-		headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
-	};
-
-	try {
-		let response = await axios.request(options);
-		return response.data;
-	} catch (error) {
-		console.error('GET databases error');
-		if (error.response) {
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-}
-exports.getDatabases = getDatabases;
-
-/**
- * Gets array of available schemas in Alation 
- * @param {String} alationDomain The domain of your Alation organization 
- * @param {String} alationApiAccessToken The Alation API Access Token (short-term) 
- * @returns JS Array of Objects
- */
-let getSchemas = async (alationDomain, alationApiAccessToken) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${alationDomain}/integration/v2/schema/`),
-		headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
-	};
-
-	try {
-		let response = await axios.request(options);
-		return response.data;
-	} catch (error) {
-		console.error('GET schemas error');
-		if (error.response) {
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-}
-exports.getSchemas = getSchemas;
-
-/**
- * Gets data of column in Alation
- * @param {String} alationDomain The domain of your Alation organization 
- * @param {String} alationApiAccessToken The Alation API Access Token (short-term) 
- * @param {Number} dsId The database ID
- * @param {Number} schemaId The schema ID
- * @param {String} tableName The table name
- * @param {String} columnName The column name
- * @returns JS Object
- */
-let getColumn = async (alationDomain, alationApiAccessToken, dsId, schemaId, tableName, columnName) => {
-	const options = {
-		method: 'GET',
-		url: encodeURI(`https://${alationDomain}/integration/v2/column/?name=${columnName}&table_name=${tableName}&schema_id=${schemaId}&ds_id=${dsId}`),
-		headers: { accept: 'application/json', TOKEN: alationApiAccessToken },
-	};
-
-	try {
-		let response = await axios.request(options);
-		return response.data;
-	} catch (error) {
-		if (error.response) {
-			console.error('GET column error');
-			console.error(error.response.data);
-			console.error(error.response.status);
-		}
-		throw error;
-	}
-}
-exports.getColumn = getColumn;
-
-/**
- * Gets user info based on email
- * @param {String} alationDomain The domain of your Alation organization 
- * @param {String} alationApiAccessToken The Alation API Access Token (short-term) 
- * @param {String} email The email of user
- * @returns True || False
- */
-let getUsers = async (alationDomain, alationApiAccessToken, email) => {
-	let options = {
-		method: 'GET',
-		url: encodeURI(`https://${alationDomain}/integration/v1/user/?email=${email}&limit=100&skip=0`),
-		headers: { TOKEN: alationApiAccessToken, accept: 'application/json' }
-	}
-
-	try {
-		await axios.request(options);
+		await alationAxios.get(`/v1/user/?email=${process.env.ALATION_EMAIL}&limit=100&skip=0`);
 		return true;
 	} catch (error) {
 		console.error('GET alation users error');
@@ -178,4 +27,114 @@ let getUsers = async (alationDomain, alationApiAccessToken, email) => {
 		return false;
 	}
 };
-exports.getUsers = getUsers;
+
+/**
+ * Gets databases in Alation.
+ * Exclude `undeployed` databases.
+ *
+ * @async
+ * @returns {Promise<Object[]>} An array of database objects.
+ */
+export const getDatabases = async () => {
+	try {
+		let response = await alationAxios.get(`/v1/datasource/?include_undeployed=false&include_hidden=true`);
+		return response.data;
+	} catch (error) {
+		console.error('GET Alation databases error');
+		if (error.response) {
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
+
+/**
+ * Gets custom fields in Alation using `field_type` and `name_singular` as search parameters.
+ *
+ * @async
+ * @param {String} field_type - The type of the custom field.
+ * @param {String} name_singular - The name of the custom field.
+ * @returns {Promise<Object[]>} An array of custom field objects.
+ */
+export const getMultipleCustomFields = async (field_type, name_singular) => {
+	try {
+		let response = await alationAxios.get(`/v2/custom_field/?field_type=${field_type}&name_singular=${name_singular}`);
+		return response.data;
+	} catch (error) {
+		console.error('GET multiple custom fields error');
+		if (error.response) {
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
+
+/**
+ * Gets schemas in Alation for specified `databaseId`.
+ *
+ * @async
+ * @param {String} databaseId - Alation database ID
+ * @returns {Promise<Object[]>} - An array of schema objects
+ */
+export const getSchemas = async (databaseId) => {
+	try {
+		let response = await alationAxios.request(`/v2/schema/?ds_id=${databaseId}`);
+		return response.data;
+	} catch (error) {
+		console.error('GET schemas error');
+		if (error.response) {
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
+
+/**
+ * Gets columns in Alation for specified `databaseId`, `schemaId`, `tableName` and `columnName`.
+ *
+ * @async
+ * @param {Number} databaseId - The ID of the database.
+ * @param {Number} schemaId - The ID of the schema.
+ * @param {String} tableName - The name of the table.
+ * @param {String} columnName - The name of the column.
+ * @returns {Promise<Object[]>} An array of column objects.
+ */
+export const getColumns = async (databaseId, schemaId, tableName, columnName) => {
+	try {
+		let response = await alationAxios.get(
+			`/v2/column/?ds_id=${databaseId}&schema_id=${schemaId}&table_name=${tableName}&name=${columnName}`
+		);
+		return response.data;
+	} catch (error) {
+		console.error('GET column error');
+		if (error.response) {
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
+
+/**
+ * Updates custom field for specified objects within `updateObjects`.
+ *
+ * @async
+ * @param {Object[]} updateObjects - The objects that contain information about what object's custom field to update with update data.
+ * @returns {Promise<Object>} Results of updates.
+ */
+export const updateMultipleCustomFieldValues = async (updateObjects) => {
+	try {
+		const response = await alationAxios.put(`/v2/custom_field_value/`, updateObjects);
+		return response.data;
+	} catch (error) {
+		console.error('PUT multiple custom field values error');
+		if (error.response) {
+			console.error(error.response.data);
+			console.error(error.response.status);
+		}
+		throw error;
+	}
+};
