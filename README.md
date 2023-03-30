@@ -91,7 +91,7 @@ Alation column page AFTER running the application:
 
 	$ cd altr-alation-classification
 
-**Install npm packages**
+**Install npm packages** (Not needed via Docker)
 
 	$ npm install
 
