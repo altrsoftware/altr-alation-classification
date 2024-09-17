@@ -2,7 +2,6 @@ import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { stringify } from 'querystring';
-import { args } from 'yargs';
 
 const jar = new CookieJar();
 const client = wrapper(axios.create({ jar }));
@@ -48,13 +47,13 @@ let buildOptions = (countries) => {
 
 let main = async () => {
 	try {
-		if (!args.domain || !args.account || !args.password) {
+		if (!process.env.domain || !process.env.account || !process.env.password) {
 			throw Error(
 				'Missing environment variables: $ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>'
 			);
 		}
-		let domain = args.domain;
-		await login(domain, args.account, args.password);
+		let domain = process.env.domain;
+		await login(domain, process.env.account, process.env.password);
 
 		let altrClassification = {
 			field_type: 'MULTI_PICKER',

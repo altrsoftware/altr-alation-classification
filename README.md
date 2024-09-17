@@ -102,7 +102,7 @@ Alation column page AFTER running the application:
 
 **1. You **must add **custom fields** to your** Alation environment for this application to work successfully**
 
-	$ node createCustomField.js --domain=<Alation Domain> --account=<Alation Login Email> --password=<Alation Login Password>
+	$ domain=<Alation Domain> account=<Alation Login Email> password=<Alation Login Password> node createCustomField.js
 
 1. Click the *Settings* icon at the top right of your Alation environment
 
@@ -184,8 +184,6 @@ This application was built using the following npm packages:
 * [p-throttle](https://www.npmjs.com/package/p-throttle)
 
 * [tough-cookie](https://www.npmjs.com/package/tough-cookie/v/4.1.2)
-
-* [yargs](https://www.npmjs.com/package/yargs/v/17.6.2)
 
   
 
