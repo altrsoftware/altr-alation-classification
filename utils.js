@@ -3,6 +3,8 @@ import * as altr from './api/altrApi.js';
 import pThrottle from 'p-throttle';
 import 'dotenv-defaults/config.js';
 
+const ALATION_API_VERSION = process.env.ALATION_API_VERSION;
+
 // Setup throttle limit and interval
 // To change these defaults, copy these environment variables to .env and change the values
 const throttle = pThrottle({
@@ -48,7 +50,7 @@ export const getAllCustomFields = async () => {
  */
 export const getMatchingDatabases = (databasesOne, databasesTwo) => {
 	return databasesOne.filter((databaseOne) =>
-		databasesTwo.find((databaseTwo) => databaseOne.dbname?.toUpperCase() === databaseTwo.dbname?.toUpperCase())
+		databasesTwo.find((databaseTwo) => databaseOne.dbname?.toUpperCase() === databaseTwo.valueOf(ALATION_API_VERSION === 'v2' ? 'title' : 'dbname')?.toUpperCase())
 	);
 };
 
@@ -59,7 +61,7 @@ export const getMatchingDatabases = (databasesOne, databasesTwo) => {
  * @returns {String[]} An array of database names.
  */
 export const getDatabaseNames = (databases) => {
-	return databases?.map((database) => database.dbname);
+	return databases?.map((database) => database.valueOf(ALATION_API_VERSION === 'v2' ? 'title' : 'dbname'));
 };
 
 /**
@@ -311,7 +313,7 @@ export const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationD
 
 	return alationDatabases.map((database) => {
 		// Filter classifier type values if they include Snowflake Native Classification prefixes
-		let currentClassifiers = classifiers.get(database.dbname.toUpperCase()).sort((a, b) => b.Amount - a.Amount);
+		let currentClassifiers = classifiers.get(database.valueOf(ALATION_API_VERSION === 'v2' ? 'title' : 'dbname').toUpperCase()).sort((a, b) => b.Amount - a.Amount);
 		currentClassifiers = currentClassifiers.map((classifier) => {
 			if (classifier.Type.includes(`SEMANTIC_CATEGORY:`)) {
 				classifier.Type = classifier.Type.replace(`SEMANTIC_CATEGORY:`, ``);
@@ -321,7 +323,7 @@ export const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationD
 			return classifier;
 		});
 
-		let richText = buildClassificationReportRichText(currentClassifiers, totals.get(database.dbname.toUpperCase()));
+		let richText = buildClassificationReportRichText(currentClassifiers, totals.get(database.valueOf(ALATION_API_VERSION === 'v2' ? 'title' : 'dbname').toUpperCase()));
 
 		return {
 			value: richText,

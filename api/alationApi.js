@@ -1,6 +1,8 @@
 import 'dotenv-defaults/config.js';
 import axios from 'axios';
 
+const ALATION_API_VERSION = process.env.ALATION_API_VERSION;
+
 export const alationAxios = axios.create({
 	baseURL: encodeURI(`https://${process.env.ALATION_DOMAIN}/integration`),
 	headers: {
@@ -37,7 +39,7 @@ export const getUsers = async () => {
  */
 export const getDatabases = async () => {
 	try {
-		let response = await alationAxios.get(`/v1/datasource/?include_undeployed=false&include_hidden=true`);
+		let response = await alationAxios.get(`/${ALATION_API_VERSION}/datasource/?include_undeployed=false&include_hidden=true`);
 		return response.data;
 	} catch (error) {
 		console.error('GET Alation databases error');
