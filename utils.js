@@ -195,7 +195,7 @@ export const getAlationSchemas = async (alationDatabases) => {
 	let alationSchemaMap = new Map();
 	for (const schema of results) {
 		let schemaKeyArray = schema.key.split(`.`);
-
+		if(schemaKeyArray.length < 3) continue;
 		// exclude `INFORMATION_SCHEMA` and `ALTR_DSAAS` schemas
 		if (schemaKeyArray[2].toUpperCase() == `INFORMATION_SCHEMA` || schemaKeyArray[2].toUpperCase() == `ALTR_DSAAS`)
 			continue;
@@ -219,8 +219,10 @@ export const getAlationColumns = async (columnToClassifierMap, alationSchemasMap
 	console.time(`Get Alation Columns`);
 	for (const [key, value] of columnToClassifierMap) {
 		let columnHashIdArray = key.split(`.`);
+		if(columnHashIdArray.length < 3) continue;
 		let lookup = `${columnHashIdArray[0]}.${columnHashIdArray[1]}`.toUpperCase();
 		let schema = alationSchemasMap.get(lookup);
+		if(!schema) continue;
 		let databaseId = schema.ds_id;
 		let schemaId = schema.id;
 		let tableName = `${columnHashIdArray[0]}.${columnHashIdArray[1]}.${columnHashIdArray[2]}`.toLowerCase();
