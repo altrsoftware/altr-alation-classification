@@ -50,7 +50,7 @@ export const getAllCustomFields = async () => {
  */
 export const getMatchingDatabases = (databasesOne, databasesTwo) => {
 	return databasesOne.filter((databaseOne) =>
-		databasesTwo.find((databaseTwo) => databaseOne.dbname?.toUpperCase() === databaseTwo.valueOf(ALATION_API_VERSION === 'v2' ? 'title' : 'dbname')?.toUpperCase())
+		databasesTwo.find((databaseTwo) => databaseOne.dbname?.toUpperCase() === databaseTwo[ALATION_API_VERSION === 'v2' ? 'title' : 'dbname']?.toUpperCase())
 	);
 };
 
@@ -313,7 +313,7 @@ export const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationD
 
 	return alationDatabases.map((database) => {
 		// Filter classifier type values if they include Snowflake Native Classification prefixes
-		let currentClassifiers = classifiers.get(database.valueOf(ALATION_API_VERSION === 'v2' ? 'title' : 'dbname').toUpperCase()).sort((a, b) => b.Amount - a.Amount);
+		let currentClassifiers = classifiers.get(database[ALATION_API_VERSION === 'v2' ? 'title' : 'dbname'].toUpperCase()).sort((a, b) => b.Amount - a.Amount);
 		currentClassifiers = currentClassifiers.map((classifier) => {
 			if (classifier.Type.includes(`SEMANTIC_CATEGORY:`)) {
 				classifier.Type = classifier.Type.replace(`SEMANTIC_CATEGORY:`, ``);
@@ -323,7 +323,7 @@ export const buildDatabaseRichTextUpdateObjects = (classifiers, totals, alationD
 			return classifier;
 		});
 
-		let richText = buildClassificationReportRichText(currentClassifiers, totals.get(database.valueOf(ALATION_API_VERSION === 'v2' ? 'title' : 'dbname').toUpperCase()));
+		let richText = buildClassificationReportRichText(currentClassifiers, totals.get(database[ALATION_API_VERSION === 'v2' ? 'title' : 'dbname'].toUpperCase()));
 
 		return {
 			value: richText,
